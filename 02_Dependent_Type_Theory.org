@@ -137,7 +137,7 @@ nat → nat= and "redefining" it to look like =g= is a process known as
 /currying/, something we will come back to below.
 
 By now you may also have guessed that, in Lean, =(m, n)= denotes the
-ordered pair of =m= and =n=, and if =p= is a pair, =fst p= and =snd p=
+ordered pair of =m= and =n=, and if =p= is a pair, =p.1= and =p.2=
 denote the two projections.
 
 ** Types as Objects
