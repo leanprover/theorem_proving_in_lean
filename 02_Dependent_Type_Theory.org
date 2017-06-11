@@ -542,7 +542,7 @@ eval t 2   -- 16
 Here, =t= is definitionally equal to the term =(x + x) * (x + x)=.
 You can combine multiple assignments in a single =let= statement:
 #+BEGIN_SRC lean
-check let y := 2 + 2, z := y + y in z * z   -- 16
+check let y := 2 + 2, z := y + y in z * z   -- ℕ
 eval  let y := 2 + 2, z := y + y in z * z   -- 64
 #+END_SRC
 
