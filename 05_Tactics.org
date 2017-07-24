@@ -1,6 +1,12 @@
 #+Title: Theorem Proving in Lean
 #+Author: [[http://www.andrew.cmu.edu/user/avigad][Jeremy Avigad]], [[http://leodemoura.github.io][Leonardo de Moura]], [[http://www.cs.cmu.edu/~soonhok][Soonho Kong]]
 
+# TODO(Jeremy): I still need to describe these tactics:
+# - injection (do this in the next chapter)
+# - by_cases, by_contradiction / by_contra 
+#      (and local attribute classical.prop_decidable [instance])
+#   (maybe do this in the axioms and computation chapter?)
+
 * Tactics
 :PROPERTIES:
   :CUSTOM_ID: Tactics
@@ -83,7 +89,7 @@ exactly. It is good form to use it in a tactic proof, since its
 failure signals that something has gone wrong; but otherwise =apply=
 would work just as well.
 
-You can see the resulting proof term with the =print= command:
+You can see the resulting proof term with the =#print= command:
 #+BEGIN_SRC lean
 theorem test (p q : Prop) (hp : p) (hq : q) : p ∧ q ∧ p :=
 begin
@@ -95,7 +101,7 @@ begin
 end
 
 -- BEGIN
-print test
+#print test
 -- END
 #+END_SRC
 
@@ -129,25 +135,22 @@ begin
 end
 
 -- BEGIN
-print test
+#print test
 -- END
 #+END_SRC
 
-# TODO(Jeremy): will we eventually have a sequencing operator in Lean
-# 3?
-
-# Tactic applications can also be concatenated with a
-# semicolon. Formally speaking, there is only one (compound) step in the
-# following proof:
-# #+BEGIN_SRC lean
-# theorem test (p q : Prop) (hp : p) (hq : q) : p ∧ q ∧ p :=
-# begin
-#   apply (and.intro hp); exact (and.intro hq hp)
-# end
-# #+END_SRC
-
-Whenever a proof term is expected, instead of using a =begin...end=
-block, you can write the =by= keyword followed by a single tactic:
+Tactic applications can also be concatenated with a semicolon.
+Formally speaking, there is only one (compound) step in the following
+proof:
+#+BEGIN_SRC lean
+theorem test (p q : Prop) (hp : p) (hq : q) : p ∧ q ∧ p :=
+begin
+  apply and.intro hp; exact and.intro hq hp
+end
+#+END_SRC
+See [[#Tactic_Combinators][Section 5.4]] for a more precise description of the semantics of the
+semicolon. When a single tactic step can be used to dispell a goal,
+you can use the =by= keyword instead of using a =begin...end= block.
 #+BEGIN_SRC lean
 theorem test (p q : Prop) (hp : p) (hq : q) : p ∧ q ∧ p :=
 by exact and.intro hp (and.intro hq hp)
@@ -190,10 +193,9 @@ begin
 end
 
 omit hp hq
-
--- hp and hq are no longer included by default
 -- END
 #+END_SRC
+Thereafter, =hp= and =hq= are no longer included by default.
 Alternatively, you can use a section to delimit the scope.
 #+BEGIN_SRC lean
 variables {p q : Prop} (hp : p) (hq : q)
@@ -208,12 +210,11 @@ begin
   exact and.intro hq hp
 end
 end
-
--- hp and hq are no longer included by default
 -- END
 #+END_SRC
-Another workaround is to find a way to
-refer to the variable in question before entering a tactic block:
+Once again, thereafter, =hp= and =hq= are no longer included by
+default. Another workaround is to find a way to refer to the variable
+in question before entering a tactic block:
 #+BEGIN_SRC lean
 variables {p q : Prop} (hp : p) (hq : q)
 
@@ -226,9 +227,8 @@ begin
 end
 -- END
 #+END_SRC
-Any mention of =hp= or =hq= at all will cause it to be added to the
-hypotheses in the example.
-
+Any mention of =hp= or =hq= at all outside a tactic block will cause
+them to be added to the hypotheses.
 
 ** Basic Tactics
 
@@ -246,29 +246,29 @@ example (p q r : Prop) : p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) :=
 begin
   apply iff.intro,
     intro h,
-    apply or.elim (and.elim_right h),
+    apply or.elim (and.right h),
       intro hq,
-      apply or.intro_left,
+      apply or.inl,
       apply and.intro,
-        exact and.elim_left h,
+        exact and.left h,
       exact hq,
     intro hr,
-    apply or.intro_right,
+    apply or.inr,
     apply and.intro,
-    exact and.elim_left h,
+    exact and.left h,
     exact hr,
   intro h,
   apply or.elim h,
     intro hpq,
     apply and.intro,
-      exact and.elim_left hpq,
-    apply or.intro_left,
-    exact and.elim_right hpq,
+      exact and.left hpq,
+    apply or.inl,
+    exact and.right hpq,
   intro hpr,
   apply and.intro,
-    exact and.elim_left hpr,
-  apply or.intro_right,
-  exact and.elim_right hpr
+    exact and.left hpr,
+  apply or.inr,
+  exact and.right hpr
 end
 #+END_SRC
 
@@ -345,15 +345,41 @@ end
 There are tactics =reflexivity=, =symmetry=, and =transitivity=, which
 apply the corresponding operation. Using reflexivity, for example, is
 more general than writing =apply eq.refl=, because it works for any
-relation that has been tagged with the =refl= attribute.
-# TODO: add a reference to the chapter that describes attributes.
-With that tactic, the previous proof can be written more elegantly as
+relation that has been tagged with the =refl= attribute. (Attributes
+will be discussed in [[file:06_Interacting_with_Lean.org::#Attributes][Section 6.4]].) The =reflexivity= tactic can also be 
+abbreviated as =refl=.
+#+BEGIN_SRC lean
+example (y : ℕ) : (λ x : ℕ, 0) y = 0 :=
+begin
+  refl
+end
+
+example (x : ℕ) : x ≤ x :=
+begin
+  refl
+end
+#+END_SRC
+With these tactic, the proof can be written more elegantly as
 follows:
 #+BEGIN_SRC lean
 example : ∀ a b c : ℕ, a = b → a = c → c = b :=
 begin
   intros,
   transitivity,
+  symmetry,
+  assumption,
+  assumption
+end
+#+END_SRC
+In each case, the use of transitivity introduces a metavariable for
+the middle term, which is then determined by the later
+tactics. Alternatively, we can send this middle term as an optional
+argument to =transitivity=:
+#+BEGIN_SRC lean
+example : ∀ a b c : ℕ, a = b → a = c → c = b :=
+begin
+  intros a b c h₁ h₂,
+  transitivity a,
   symmetry,
   assumption,
   assumption
@@ -397,7 +423,7 @@ variables x y z : ℕ
 example : x = x :=
 begin
   generalize x z, -- goal is x : ℕ ⊢ ∀ (z : ℕ), z = z
-  intro y,      -- goal is x y : ℕ ⊢ y = y
+  intro y,        -- goal is x y : ℕ ⊢ y = y
   reflexivity
 end
 #+END_SRC
@@ -482,7 +508,7 @@ begin
 end
 #+END_SRC
 
-** More tactics
+** More Tactics
 
 Some additional tactics are useful for constructing and destructing
 propositions and data. For example, when applied to a goal of the form
@@ -512,7 +538,7 @@ begin
   constructor, exact hq, exact hp
 end
 #+END_SRC
-In this case, there is only one goal after the =cases= tactic is
+In this example, there is only one goal after the =cases= tactic is
 applied, with =h : p ∧ q= replaced by a pair of assumptions, =hp : p=
 and =hq : q=. The constructor applies the unique constructor for
 conjunction, =and.intro=. With these tactics, an example from the
@@ -570,7 +596,7 @@ These tactics can be used on data just as well as propositions. In the
 next two example, they are used to define functions which swap the
 components of the product and sum types:
 #+BEGIN_SRC lean
-universe variables u v
+universes u v
 
 def swap_pair {α : Type u} {β : Type v} : α × β → β × α :=
 begin
@@ -599,9 +625,24 @@ begin
   cases m with m', exact h₀, exact h₁ m'
 end
 #+END_SRC
-For further discussion, see [[file:07_Inductive_Types.org::#Inductive_Types][Chapter 7]].
+The =cases= tactic, and its companion, the =induction= tactic, are
+discussed in greater detail in [[file:07_Inductive_Types.org::#Tactics][Section 7.5]].
 
-# TODO: here and above, add a more specific section reference.
+The =contradiction= tactic searches for a contradiction among
+the hypotheses of the current goal:
+#+BEGIN_SRC lean
+example (p q : Prop) : p ∧ ¬ p → q :=
+begin
+  intro h, cases h, contradiction
+end
+#+END_SRC
+And, finally, it is worth mentioning the tactic version of =sorry=:
+#+BEGIN_SRC lean
+example (p : Prop) : p :=
+by admit
+#+END_SRC
+The =admit= tactic simply closes the current goal, producing the usual
+warning that =sorry= has been used.
 
 ** Structuring Tactic Proofs
 :PROPERTIES:
@@ -626,8 +667,8 @@ example (p q r : Prop) : p ∧ (q ∨ r) → (p ∧ q) ∨ (p ∧ r) :=
 begin
   intro h,
   exact
-    have hp : p, from h^.left,
-    have hqr : q ∨ r, from h^.right,
+    have hp : p, from h.left,
+    have hqr : q ∨ r, from h.right,
     show (p ∧ q) ∨ (p ∧ r),
     begin
       cases hqr with hq hr,
@@ -642,96 +683,158 @@ example (p q r : Prop) : p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) :=
 begin
   apply iff.intro,
     intro h,
-    cases h^.right with hq hr,
+    cases h.right with hq hr,
       exact
         show (p ∧ q) ∨ (p ∧ r),
-          from or.inl ⟨h^.left, hq⟩,
+          from or.inl ⟨h.left, hq⟩,
     exact
       show (p ∧ q) ∨ (p ∧ r),
-        from or.inr ⟨h^.left, hr⟩,
+        from or.inr ⟨h.left, hr⟩,
   intro h,
   cases h with hpq hpr,
     exact
       show p ∧ (q ∨ r),
-        from ⟨hpq^.left, or.inl hpq^.right⟩,
+        from ⟨hpq.left, or.inl hpq.right⟩,
   exact show p ∧ (q ∨ r),
-    from ⟨hpr^.left, or.inr hpr^.right⟩
+    from ⟨hpr.left, or.inr hpr.right⟩
 end
 #+END_SRC
-With the =exact= tactic, we use =show= to indicate the goal at that
-point in the proof. In fact, this idiom is so useful that Lean offers
-the following abbreviation: in a tactic block, the expression =show p,
-from t= abbreviates =exact (show p, from t)=. Thus we could have
-written the previous example more concisely as follows:
+In fact, there is a =show= tactic, which is the analog of the =show=
+keyword in a proof term: it simply declares the type of the goal that
+is about to be solved, while remaining in tactic mode. With this
+tactic, the previous proof could we written as follows:
 #+BEGIN_SRC lean
 example (p q r : Prop) : p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) :=
 begin
   apply iff.intro,
     intro h,
-    cases h^.right with hq hr,
+    cases h.right with hq hr,
       show (p ∧ q) ∨ (p ∧ r),
-        from or.inl ⟨h^.left, hq⟩,
-    show (p ∧ q) ∨ (p ∧ r),
-      from or.inr ⟨h^.left, hr⟩,
+        exact or.inl ⟨h.left, hq⟩,
+      show (p ∧ q) ∨ (p ∧ r),
+        exact or.inr ⟨h.left, hr⟩,
   intro h,
   cases h with hpq hpr,
     show p ∧ (q ∨ r),
-      from ⟨hpq^.left, or.inl hpq^.right⟩,
-  show p ∧ (q ∨ r),
-    from ⟨hpr^.left, or.inr hpr^.right⟩
+      exact ⟨hpq.left, or.inl hpq.right⟩,
+    show p ∧ (q ∨ r),
+      exact ⟨hpr.left, or.inr hpr.right⟩
 end
 #+END_SRC
-This blurs the distinction between proof-term mode and tactic-mode,
-and so it is important to use indentation and the structuring
-mechanisms discussed below to make it clear where a proof term ends.
-The convention we have used for indentation will be explained momentarily.
+The =show= tactic can actually be used to rewrite a goal to something
+definitionally equivalent:
+#+BEGIN_SRC lean
+example (n : ℕ) : n + 1 = nat.succ n :=
+begin
+  show nat.succ n = nat.succ n,
+  reflexivity
+end
+#+END_SRC
+In fact, =show= does a little more work. When there are multiple
+goals, you can use =show= to select which goal you want to work
+on. Thus both proofs below work:
+#+BEGIN_SRC lean
+example (p q : Prop) : p ∧ q → q ∧ p :=
+begin
+  intro h,
+  cases h with hp hq,
+  split,
+  show q, exact hq,
+  show p, exact hp
+end
 
-In the same way, in a tactic block, Lean interprets =have p, from t₁,
-t₂= as an abbreviation for =exact (have p, from t₁, t₂)=. Thus the
-first example in this section could have been written more concisely
-as follows:
+example (p q : Prop) : p ∧ q → q ∧ p :=
+begin
+  intro h,
+  cases h with hp hq,
+  split,
+  show p, exact hp,
+  show q, exact hq
+end
+#+END_SRC
+
+The analogue of =have= in a tactic script is the =assert= tactic,
+which introduces a new subgoal, and then names the result of that
+subgoal for use in the rest of the proof. For example, the two
+instances of =assert= below open goals for =p= and =q ∨ r=,
+respectively, and then add =hp : p= and =hqr : q ∨ r= to the context
+for subsequent use.
 #+BEGIN_SRC lean
 example (p q r : Prop) : p ∧ (q ∨ r) → (p ∧ q) ∨ (p ∧ r) :=
 begin
   intro h,
-  have hp : p, from h^.left,
-  have hqr : q ∨ r, from h^.right,
+  assert hp : p, 
+    exact h.left,
+  assert hqr : q ∨ r,
+    exact h.right,
   show (p ∧ q) ∨ (p ∧ r),
-  begin
-    cases hqr with hq hr,
-      exact or.inl ⟨hp, hq⟩,
-    exact or.inr ⟨hp, hr⟩
-  end
+  cases hqr with hq hr,
+    exact or.inl ⟨hp, hq⟩,
+  exact or.inr ⟨hp, hr⟩
 end
 #+END_SRC
+You can use any sequence of tactics to dispatch the subgoal introduced
+by =assert=. Lean also provides a =note= tactic, which combines the
+effects of an =assert= and subsequent =exact=:
+#+BEGIN_SRC lean
+example (p q r : Prop) : p ∧ (q ∨ r) → (p ∧ q) ∨ (p ∧ r) :=
+begin
+  intro h,
+  note hp : p := h.left,
+  note hqr : q ∨ r := h.right,
+  show (p ∧ q) ∨ (p ∧ r),
+  cases hqr with hq hr,
+    exact or.inl ⟨hp, hq⟩,
+  exact or.inr ⟨hp, hr⟩
+end
+#+END_SRC
+Here the types can be omitted, so we can write ~note hp := h.left~
+and ~note hqr := h.right~. Even the labels =hp= and =hq= can be
+ommitted, in which case, the new facts are introduced with the label
+=this=.
 
-You can also nest =begin...end= blocks within other =begin...end=
-blocks.  In a nested block, Lean focuses on the first goal, and
-generates an error if it has not been fully solved at the end of the
-block.  This can be helpful in indicating the separate proofs of
-multiple subgoals introduced by a tactic.
+Lean also has a =pose= tactic, similar to the =note= tactic, which is
+used to introduce local definitions. 
+#+BEGIN_SRC lean
+example : ∃ x, x + 2 = 8 :=
+begin
+  pose a : ℕ := 3 * 2,
+  existsi a, 
+  reflexivity
+end
+#+END_SRC
+As we =note=, you can make the type explicit by writing ~pose a : ℕ :=
+3 * 2~. The difference between =pose= and =have= is that =pose=
+introduces a local "let" definition, so that the definition of the
+local constant can be unfolded in the proof.
+
+For even more structured proofs, you can nest =begin...end= blocks
+within other =begin...end= blocks.  In a nested block, Lean focuses on
+the first goal, and generates an error if it has not been fully solved
+at the end of the block.  This can be helpful in indicating the
+separate proofs of multiple subgoals introduced by a tactic.
 #+BEGIN_SRC lean
 example (p q r : Prop) : p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) :=
 begin
   apply iff.intro,
   begin
     intro h,
-    cases h^.right with hq hr,
+    cases h.right with hq hr,
     begin
       show (p ∧ q) ∨ (p ∧ r),
-        from or.inl ⟨h^.left, hq⟩
+        exact or.inl ⟨h.left, hq⟩
     end,
     show (p ∧ q) ∨ (p ∧ r),
-      from or.inr ⟨h^.left, hr⟩
+      exact or.inr ⟨h.left, hr⟩
   end,
   intro h,
   cases h with hpq hpr,
   begin
-    show p ∧ (q ∨ r), from
-      ⟨hpq^.left, or.inl hpq^.right⟩
+    show p ∧ (q ∨ r),
+      exact ⟨hpq.left, or.inl hpq.right⟩
   end,
-  show p ∧ (q ∨ r), from
-    ⟨hpr^.left, or.inr hpr^.right⟩
+  show p ∧ (q ∨ r),
+    exact ⟨hpr.left, or.inr hpr.right⟩
 end
 #+END_SRC
 Here, we have introduced a new =begin..end= block whenever a tactic
@@ -748,17 +851,17 @@ example (p q r : Prop) : p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) :=
 begin
   apply iff.intro,
   { intro h,
-    cases h^.right with hq hr,
+    cases h.right with hq hr,
     { show (p ∧ q) ∨ (p ∧ r),
-        from or.inl ⟨h^.left, hq⟩ },
+        exact or.inl ⟨h.left, hq⟩ },
     show (p ∧ q) ∨ (p ∧ r),
-      from or.inr ⟨h^.left, hr⟩ },
+      exact or.inr ⟨h.left, hr⟩ },
   intro h,
   cases h with hpq hpr,
   { show p ∧ (q ∨ r),
-      from ⟨hpq^.left, or.inl hpq^.right⟩ },
+      exact ⟨hpq.left, or.inl hpq.right⟩ },
   show p ∧ (q ∨ r),
-    from ⟨hpr^.left, or.inr hpr^.right⟩
+    exact ⟨hpr.left, or.inr hpr.right⟩
 end
 #+END_SRC
 This helps explain the convention on indentation we have adopted here:
@@ -784,17 +887,17 @@ example (p q r : Prop) : p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) :=
 begin
   apply iff.intro,
   { intro h,
-    cases h^.right with hq hr,
+    cases h.right with hq hr,
     { show (p ∧ q) ∨ (p ∧ r),
-        from or.inl ⟨h^.left, hq⟩ },
+        exact or.inl ⟨h.left, hq⟩ },
     { show (p ∧ q) ∨ (p ∧ r),
-        from or.inr ⟨h^.left, hr⟩ }},
+        exact or.inr ⟨h.left, hr⟩ }},
   { intro h,
     cases h with hpq hpr,
     { show p ∧ (q ∨ r),
-        from ⟨hpq^.left, or.inl hpq^.right⟩ },
+        exact ⟨hpq.left, or.inl hpq.right⟩ },
     { show p ∧ (q ∨ r),
-        from ⟨hpr^.left, or.inr hpr^.right⟩ }}
+        exact ⟨hpr.left, or.inr hpr.right⟩ }}
 end
 #+END_SRC
 With this convention, the proof using =foo= described above would look
@@ -816,116 +919,210 @@ quickly; using the first convention means that the proofs of these
 side conditions are indented until we return to the "linear" part of
 the proof.
 
-You can simulate the effect of the =have= construct without leaving
-tactic mode using the =assert= tactic.
+Combining these various mechanisms makes for nicely structured tactic proofs:
 #+BEGIN_SRC lean
 example (p q : Prop) : p ∧ q ↔ q ∧ p :=
 begin
   apply iff.intro,
   { intro h,
-    assert hp : p, exact h^.left,
-    assert hq : q, exact h^.right,
-    exact ⟨hq, hp⟩ },
+    note hp : p := h.left,
+    note hq : q := h.right,
+    show q ∧ p, 
+      exact ⟨hq, hp⟩ },
   intro h,
-  assert hp : p, exact h^.right,
-  assert hq : q, exact h^.left,
-  exact ⟨hp, hq⟩
-end
-#+END_SRC
-Here, the first =assert= creates a new subgoal, =p=. After that
-subgoal is proved, we are left with the original subgoal, with the
-context augmented by =hp : p=. Tactics are used are to prove both
-subgoals.
-
-Another option is to use the =note= tactic, which allows you to insert
-a fact into the context, without having to state the proposition it
-proves.
-#+BEGIN_SRC lean
-example (p q : Prop) : p ∧ q ↔ q ∧ p :=
-begin
-  apply iff.intro,
-  { intro h,
-    note hp := h^.left,
-    note hq := h^.right,
-    exact ⟨hq, hp⟩ },
-  intro h,
-  note hp := h^.right,
-  note hq := h^.left,
-  exact ⟨hp, hq⟩
-end
-#+END_SRC
-In general, if =e= has type =t=, then ~note h := e~ adds a hypothesis
-=h : t= to the context, without giving you access to the contents of
-=e=. If, instead, you need the contents of =e=, use ~pose x := e~
-instead. This adds ~x : t := e~ to the context as a =let= definition
-that can be unfolded when needed. Here is an example:
-#+BEGIN_SRC lean
-example : ∃ x : ℕ, x + 3 = 8 :=
-begin
-  pose x := 5,
-  existsi x,
-  reflexivity
+  note hp : p := h.right,
+  note hq : q := h.left,
+  show p ∧ q, 
+    exact ⟨hp, hq⟩
 end
 #+END_SRC
 
-Just as the =assert= tactic can be used to simulate the benefits of
-=have=, the =change= tactic can be used to simulate the benefits of
-=show=. In the following example, the tactic =change q= affirms that the
-goal at that point is =q=, and the tactic =change p= affirms that the
-goal is =p=.
-#+BEGIN_SRC lean
-example (p q : Prop) : p ∧ q → q ∧ p :=
-begin
-  intro h,
-  split,
-  { change q,
-    exact h^.right },
-  change p,
-  exact h^.left
-end
-#+END_SRC
-The name of the =change= tactic is explained by the fact that it can
-be used to replace a goal by any definitionally equivalent statement.
-#+BEGIN_SRC lean
-example (a b : ℕ) (h : a = b) : a + 0 = b + 0 :=
-begin
-  change a = b,
-  assumption
-end
-#+END_SRC
-The =change= statement will also work if the expression you give it
-has metavariables, in which case, it tries to unify the expression
-with the goal.
-#+BEGIN_SRC lean
-example (a b c : ℕ) (h₁ : a = b) (h₂ : b = c) : a = c :=
-begin
-  transitivity,
-    change _ = b, assumption,
-  assumption
-end
-#+END_SRC
-In this example, after the =transitivity= tactic is applied, there are
-two goals, =a = ?m_1= and =?m_1 = c=. After the =change=, the two
-goals have been specialized to =a = b= and =b = c=.
+# TODO(Jeremy): with the next release, note is replaced by have, etc.
+# So e.g. we have:
+# example (p q : Prop) : p ∧ q ↔ q ∧ p :=
+# begin
+#   apply iff.intro,
+#   { assume h,
+#     have hp : p := h.left,
+#     have hq : q := h.right,
+#     show q ∧ p,
+#      exact ⟨hq, hp⟩ },
+#   assume h,
+#   have hp : p := h.right,
+#   have hq : q := h.left,
+#   show p ∧ q,
+#     exact ⟨hp, hq⟩
+# end
 
 # TODO(Jeremy): also describe
-#   tactic combinators (like =try=)
-#   tactics that manage goals
+#   tactic combinators (like try, first)
+#   tactics that manage goals: focus
 #   subst, contradiction, refine
 
-# TODO(Jeremy): break into two sections when this gets long enough
+** Tactic Combinators
+:PROPERTIES:
+  :CUSTOM_ID: Tactic_Combinators
+:END:
 
-** Rewriting and the Simplifier
+/Tactic combinatorics/ are operations that form new tactics from old
+ones. A sequencing combinator is already implicit in the comma that
+appear in a =begin...end= block:
+#+BEGIN_SRC lean
+example (p q : Prop) (hp : p) : p ∨ q :=
+begin left, assumption end
+#+END_SRC
+This is essentially equivalent to the following:
+#+BEGIN_SRC lean
+example (p q : Prop) (hp : p) : p ∨ q :=
+by { left, assumption }
+#+END_SRC
+Here, ={ left, assumption }= is functionally equivalent to a single
+tactic which first applies =left= and then applies =assumption=.
+
+In an expression =t₁; t₂=, the semicolon provides a /parallel/ version
+of the sequencing operation: =t₁= is applied to the current goal, and
+then =t₂= is applied to /all/ the resulting subgoals:
+#+BEGIN_SRC lean
+example (p q : Prop) (hp : p) (hq : q) : p ∧ q :=
+by split; assumption
+#+END_SRC
+This is especially useful when the resulting goals can be finished off
+in a uniform way, or, at least, when it is possible to make progress
+on all of them uniformly.
+
+The /orelse/ combinator, denoted =<|>=, applies one tactic, and
+then backtracks and applies another one if the first one fails:
+#+BEGIN_SRC lean
+example (p q : Prop) (hp : p) : p ∨ q :=
+by { left, assumption } <|> { right, assumption}
+
+example (p q : Prop) (hq : q) : p ∨ q :=
+by { left, assumption } <|> { right, assumption}
+#+END_SRC
+In the first example, the left branch succeeds, whereas in the second
+one, it is the right one succeeds. In the next three examples, the
+same compound tactic succeeds in each case.
+#+BEGIN_SRC lean
+example (p q r : Prop) (hp : p) : p ∨ q ∨ r :=
+by repeat { {left, assumption} <|> right <|> assumption }
+
+example (p q r : Prop) (hq : q) : p ∨ q ∨ r :=
+by repeat { {left, assumption} <|> right <|> assumption }
+
+example (p q r : Prop) (hr : r) : p ∨ q ∨ r :=
+by repeat { {left, assumption} <|> right <|> assumption }
+#+END_SRC
+The tactic tries to solve the left disjunct immediately
+by assumption; if that fails, it tries to focus on the right disjunct;
+and if that doesn't work, it invokes the assumption tactic.
+
+Incidentally, a tactic expressions is really formal terms in Lean, of
+type =tactic α= for some =α=. Tactics can be defined and then applied
+later on.
+#+BEGIN_SRC lean
+meta def my_tac : tactic unit :=
+`[ repeat { {left, assumption} <|> right <|> assumption } ]
+
+example (p q r : Prop) (hp : p) : p ∨ q ∨ r :=
+by my_tac
+
+example (p q r : Prop) (hq : q) : p ∨ q ∨ r :=
+by my_tac
+
+example (p q r : Prop) (hr : r) : p ∨ q ∨ r :=
+by my_tac
+#+END_SRC
+With a =begin...end= block or after a =by=, Lean's parser uses special
+mechanisms to parse these expressions, but they are similar to
+ordinary expressions in Lean like =x + 2= and =list α=. (The
+annotation =`[...]= in the definition of =my_tac= above invokes the
+special parsing mechanism here, too.) The book [[https://leanprover.github.io/programming_in_lean/][Programming in Lean]]
+provides a fuller introduction to writing tactics and installing them
+for interactive use. The tactic combinators were discussing here serve
+as casual entry points to the tactic programming language.
+
+You will have no doubt noticed by now that tactics can fail. Indeed,
+it is the "failure" state that causes the /orelse/ combinator to
+backtrack and try the next tactic. The =try= combinator builds a
+tactic that always succeeds, though possibly in a trival way: =try t=
+executes =t= and reports success, even if =t= fails. It is equivalent
+to =t <|> skip=, where =skip= is a tactic that does nothing (and
+succeeds in doing so). In the next example, the second =split=
+succeeds on the right conjunct =q ∧ r= (remember that disjunction and
+conjunction associate to the right) but fails on the first. The =try=
+tactic ensures that the sequential composition succeeds.
+#+BEGIN_SRC lean
+example (p q r : Prop) (hp : p) (hq : q) (hr : r) : p ∧ q ∧ r :=
+by split; try {split}; assumption
+#+END_SRC
+Be careful: =repeat {try t}= will loop forever, because the inner
+tactic never fails.
+
+In a proof, there are often multiple goals outstanding. Parallel
+sequencing is one way to arrange it so that a single tactic is applied
+to multiple goals, but there are other ways to do this. For example,
+=all_goals t= applies =t= to all open goals:
+#+BEGIN_SRC lean
+example (p q r : Prop) (hp : p) (hq : q) (hr : r) : p ∧ q ∧ r :=
+begin 
+  split,
+  all_goals { try {split} },
+  all_goals { assumption }
+end
+#+END_SRC
+In this case, the =any_goals= tactic provides a more robust
+solution. It is similar to =all_goals=, except it fails unless its
+argument succeeds on at least one goal.
+#+BEGIN_SRC lean
+example (p q r : Prop) (hp : p) (hq : q) (hr : r) : p ∧ q ∧ r :=
+begin 
+  split,
+  any_goals { split },
+  any_goals { assumption }
+end
+#+END_SRC
+The first tactic in the =begin...end= block below repeatedly
+splits conjunctions:
+#+BEGIN_SRC lean
+example (p q r : Prop) (hp : p) (hq : q) (hr : r) : 
+  p ∧ ((p ∧ q) ∧ r) ∧ (q ∧ r ∧ p) :=
+begin
+  repeat { any_goals { split }},
+  all_goals { assumption }
+end
+#+END_SRC
+In fact, we can compress the full tactic down to one line:
+#+BEGIN_SRC lean
+example (p q r : Prop) (hp : p) (hq : q) (hr : r) : 
+  p ∧ ((p ∧ q) ∧ r) ∧ (q ∧ r ∧ p) :=
+by repeat { any_goals { split <|> assumption} }
+#+END_SRC
+
+The combinators =focus= and =solve1= go in the other
+direction. Specifically, =focus t= ensures that =t= only effects the
+current goal, temporarily hiding the others from the scope. So, if =t=
+ordinarly only effects the current goal, =focus { all_goals {t} }= has
+the same effect as =t=. The tactic =solve1 t= is similar, except that
+it fails unless =t= succeeds in solving the goal entirely. The =done=
+tactic is also sometimes useful to direct the flow of control; it
+succeeds only if there are no goals left to be solved.
+
+** Rewriting
 
 The =rewrite= tactic (abbreviated =rw=) and the =simp= tactic were
-introduced in [[file:04_Quantifiers_and_Equality.org::#Calculational_Proofs][Section 4.3]]. In this section, we discuss them in greater detail.
+introduced briefly in [[file:04_Quantifiers_and_Equality.org::#Calculational_Proofs][Section 4.3]]. In this section and the next, we
+discuss them in greater detail.
 
 The =rewrite= tactic provide a basic mechanism for applying
 substitutions to goals and hypotheses, providing a convenient and
 efficient way of working with equality. The most basic form of the
-tactic is =rewrite t=, where =t= is a term whose conclusion is an
-equality. In the following example, we use this basic form to rewrite
-the goal using a hypothesis.
+tactic is =rewrite t=, where =t= is a term whose type asserts an
+equality. For example, =t= can be a hypothesis =h : x = y= in the
+context; it can be a general lemma, like =add_comm : ∀ x y, x + y =
+y + x=, in which the rewrite tactic tries to find suitable
+instantiations of =x= and =y=; or it can be any compound term
+asserting a concrete or general equation. In the following example, we
+use this basic form to rewrite the goal using a hypothesis.
 #+BEGIN_SRC lean
 variables (f : ℕ → ℕ) (k : ℕ)
 
@@ -936,8 +1133,16 @@ begin
 end
 #+END_SRC
 In the example above, the first use of =rw= replaces =k= with =0= in
-the goal =f k = 0=.  Then, the second one replaces =f 0= with =0=. The
-tactic automatically closes any goal of the form =t = t=.
+the goal =f k = 0=. Then, the second one replaces =f 0= with =0=. The
+tactic automatically closes any goal of the form =t = t=. Here is an
+example of rewriting using a compound expression:
+#+BEGIN_SRC lean
+example (x y : ℕ) (p : ℕ → Prop) (q : Prop) (h : q → x = y) 
+  (h' : p y) (hq : q) : p x :=
+by { rw (h hq), assumption }
+#+END_SRC
+Here, =h hq= establishes the equation =x = y=. The parentheses around
+=h hq= are not necessary, but we have added them for clarity.
 
 Multiple rewrites can be combined using the notation =rw [t_1,
 ..., t_n]=, which is just shorthand for =rewrite t_1, ..., rewrite
@@ -946,9 +1151,7 @@ t_n=.  The previous example can be written as follows:
 variables (f : ℕ → ℕ) (k : ℕ)
 
 example (h₁ : f 0 = 0) (h₂ : k = 0) : f k = 0 :=
-begin
-  rw [h₂, h₁]
-end
+by rw [h₂, h₁]
 #+END_SRC
 
 By default, =rw= uses an equation in the forward direction, matching
@@ -998,15 +1201,39 @@ parenthesis to the right on both sides, and then switch =b= and
 take place on the right-hand side by specifying the second argument to
 =add_comm=.
 
+# TODO(Jeremy): this will work in the next release
+
+# You can also use =rewrite= to unfold a definition:
+# #+BEGIN_SRC lean
+# def double (x : ℕ) := x + x
+
+# example (x y : ℕ) : double x + y = x + y + x :=
+# by rw [double, add_right_comm]
+# #+END_SRC
+# Here, the occurrence of =double= in the list of arguments is
+# interpreted as an instruction to use the defining equation for
+# =double=. Alternatively, you can unfold such a definition using the
+# =unfold= tactic:
+# #+BEGIN_SRC lean
+# def double (x : ℕ) := x + x
+
+# example (x y : ℕ) : double x + y = x + y + x :=
+# by rw [double, add_right_comm]
+
+# example (x y : ℕ) : double x + y = x + y + x :=
+# begin
+#   unfold double,
+#   apply add_right_comm
+# end
+# #+END_SRC
+
 By default, the =rewrite= tactic affects only the goal. The notation
 =rw t at h= applies the rewrite =t= at hypothesis =h=.
 #+BEGIN_SRC lean
 variables (f : ℕ → ℕ) (a : ℕ)
 
 example (h : a + 0 = 0) : f a = f 0 :=
-begin
-  rw add_zero at h, rw h
-end
+by { rw add_zero at h, rw h }
 #+END_SRC
 The first step, =rw add_zero at h=, rewrites the hypothesis =a + 0 = 0=
 to =a = 0=. Then the new hypothesis =a = 0= is used to rewrite the
@@ -1019,7 +1246,7 @@ The =rewrite= tactic is not restricted to propositions. In the
 following example, we use =rw h at t= to rewrite the hypothesis
 =t : tuple α n= to =v : tuple α 0=.
 #+BEGIN_SRC lean
-universe variable u
+universe u
 
 def tuple (α : Type u) (n : ℕ) := { l : list α // list.length l = n }
 
@@ -1036,44 +1263,65 @@ Note that the rewrite tactic can carry out generic calculations in
 any algebraic structure. The following examples involve an arbitrary
 ring and an arbitrary group, respectively.
 #+BEGIN_SRC lean
-universe variable uu
+universe u
 
-example {α : Type uu} [ring α] (a b c : α) : a * 0 + 0 * b + c * 0 + 0 * a = 0 :=
+example {α : Type u} [ring α] (a b c : α) : 
+  a * 0 + 0 * b + c * 0 + 0 * a = 0 :=
 begin
   rw [mul_zero, mul_zero, zero_mul, zero_mul],
   repeat { rw add_zero }
 end
 
-example {α : Type uu} [group α] {a b : α} (h : a * b = 1) : a⁻¹ = b :=
+example {α : Type u} [group α] {a b : α} (h : a * b = 1) : a⁻¹ = b :=
 by rw [-(mul_one a⁻¹), -h, inv_mul_cancel_left]
 #+END_SRC
 Using the type class mechanism described in [[file:10_Type_Classes.org::#Type_Classes][Chapter 10]], Lean
 identifies both abstract and concrete instances of the relevant
 algebraic structures, and instantiates the relevant facts accordingly.
 
-# TODO(Jeremy): add a reference to the chapter on attributes
+# TODO(Jeremy): in the next release, describe the conv framework.
+
+** Using the Simplifier
+
+# TODO(Jeremy): describe more features of the simplifier, such as
+# arithmetic rewriting, as they become available
 
 Whereas =rewrite= is designed as a surgical tool for manipulating a
-goal, the simplifier offers a powerful form of automation. A number of
-identities in Lean's library have been tagged with the =[simp]=
-attribute, and the =simp= tactic uses them to iteratively rewrite
-subterms in an expression.
+goal, the simplifier offers a more powerful form of automation. A
+number of identities in Lean's library have been tagged with the
+=[simp]= attribute, and the =simp= tactic uses them to iteratively
+rewrite subterms in an expression.
 #+BEGIN_SRC lean
 variables (x y z : ℕ) (p : ℕ → Prop)
-premise   (h : p (x * y))
+variable  (h : p (x * y))
 
 example : (x + 0) * (0 + y * 1 + z * 0) = x * y :=
 by simp
 
 include h
 example : p ((x + 0) * (0 + y * 1 + z * 0)) :=
-begin simp, assumption end
+by { simp, assumption }
 #+END_SRC
 In the first example, the left-hand side of the equality in the goal
 is simplified using the usual identities involving 0 and 1, reducing
 the goal to =x * y = x * y=. At that point, =simp= applies reflexivity
 to finish it off. In the second example, =simp= reduces the goal to =p
-(x * y)=, at which point the assumption =h= finishes it off.
+(x * y)=, at which point the assumption =h= finishes it off. (Remember
+that we have to =include h= explicitly because it is not explicitly
+mentioned.) Here are some more examples with lists:
+#+BEGIN_SRC lean
+universe u
+variable {α : Type}
+open list
+
+example (xs : list ℕ) : 
+  reverse (xs ++ [1, 2, 3]) = [3, 2, 1] ++ reverse xs :=
+by simp
+
+example (xs ys : list α) : 
+  length (reverse (xs ++ ys)) = length xs + length ys :=
+by simp
+#+END_SRC
 
 As with =rw=, you can use the keyword =at= to simplify a hypothesis:
 #+BEGIN_SRC lean
@@ -1081,8 +1329,20 @@ variables (x y z : ℕ) (p : ℕ → Prop)
 
 -- BEGIN
 example (h : p ((x + 0) * (0 + y * 1 + z * 0))) : p (x * y) :=
-begin simp at h, assumption end
+by { simp at h, assumption }
 -- END
+#+END_SRC
+Moreover, you can use a "wildcard" asterisk to simplify all the
+hypotheses and the goal:
+#+BEGIN_SRC lean
+variables (w x y z : ℕ) (p : ℕ → Prop)
+
+example (h : p (x * y + z * w  * x)) : p (x * w * z + y * x) :=
+by { simp at *, assumption }
+
+example (h₁ : p (1 * x + y)) (h₂ : p  (x * z * 1)) : 
+  p (y + 0 + x) ∧ p (z * x) :=
+by { simp at *, split; assumption }
 #+END_SRC
 
 For operations that are commutative and associative, like addition on
@@ -1109,6 +1369,7 @@ by simp
 example (h : p (x * y + z * w  * x)) : p (x * w * z + y * x) :=
 begin simp, simp at h, assumption end
 #+END_SRC
+
 As with the rewriter, the simplifier behaves appropriately in
 algebraic structures:
 #+BEGIN_SRC lean
@@ -1121,30 +1382,322 @@ example (x y z w : α) : x * y + z * w  * x = x * w * z + y * x :=
 by simp
 #+END_SRC
 
-Also as with the =rewrite= tactic, you can pass additional arguments
-to =simp=. These can either be names of theorems or expressions.
-The =simp= tactic does not recognize the =-t= syntax, so to use an
-identity in the other direction you need to use =eq.symm=
-explicitly. In any case, the additional rules are added to the
-collection of identities that are used to simplify a term.
+As with =rewrite=, you can send =simp= a list of facts to use,
+including general lemmas, local hypotheses, definitions to unfold, and
+compound expressions. The =simp= tactic does not recognize the =-t=
+syntax, so to use an identity in the other direction you need to use
+=eq.symm= explicitly. In any case, the additional rules are added to
+the collection of identities that are used to simplify a term.
 #+BEGIN_SRC lean
 def f (m n : ℕ) : ℕ := m + n + m
 
-theorem f.def (m n : ℕ) : f m n = m + n + m := rfl
-
 example {m n : ℕ} (h : n = 1) (h' : 0 = m) : (f m n) * m = m :=
-by simp [h, h'^.symm, f.def]
+by simp [h, h'.symm, f]
 #+END_SRC
-If we add the attribute =[simp]= to the theorem =f.def=, we do not
-need to include it.
+A common idiom is to simplify a goal using local hypotheses:
 #+BEGIN_SRC lean
-def f (m n : ℕ) : ℕ := m + n + m
+variables (f : ℕ → ℕ) (k : ℕ)
 
-@[simp]
-theorem f.def (m n : ℕ) : f m n = m + n + m := rfl
+example (h₁ : f 0 = 0) (h₂ : k = 0) : f k = 0 :=
+by simp [h₁, h₂]
+#+END_SRC
+The tactic =simph= is a variant of =simp= that conveniently uses all
+the hypotheses in the local context:
+#+BEGIN_SRC lean
+variables (f : ℕ → ℕ) (k : ℕ)
 
-example {m n : ℕ} (h : n = 1) (h' : 0 = m) : (f m n) * m = m :=
-by simp [h, h'^.symm]
+-- BEGIN
+example (h₁ : f 0 = 0) (h₂ : k = 0) : f k = 0 :=
+by simph
+-- END
+#+END_SRC
+Here is another example:
+#+BEGIN_SRC lean
+example (u w x y z : ℕ) (h₁ : x = y + z) (h₂ : w = u + x) : 
+  w = z + y + u :=
+by simph
+#+END_SRC
+
+The simplifier will also do propositional rewriting. For example,
+using the hypothesis =p=, it rewrites =p ∧ q= to =q= and =p ∨ q= to
+=true=, which it then proves trivially. Iterating such rewrites
+produces nontrivial propositional reasoning.
+#+BEGIN_SRC lean
+variables (p q r : Prop)
+
+example (hp : p) : p ∧ q ↔ q :=
+by simph
+
+example (hp : p) : p ∨ q :=
+by simph
+
+example (hp : p) (hq : q) : p ∧ (q ∨ r) :=
+by simph
+#+END_SRC
+
+The next two examples simplify all the hypotheses, and then use them
+to prove the goal.
+#+BEGIN_SRC lean
+section
+variables (u w x x' y y' z : ℕ) (p : ℕ → Prop)
+
+example (h₁ : x + 0 = x') (h₂ : y + 0 = y') : x + y + 0 = x' + y' :=
+by { simp at *, simph }
+
+example (h₁ : x = y + z) (h₂ : w = u + x) (h₃ : p (z + y + u)) :
+  p w  :=
+by { simp at *, simph }
+
+end
+#+END_SRC
+# TODO(Jeremy): we can uncomment this in the next release.
+
+# The =simp_all= tactic does even more: it uses all the hypotheses to
+# simplify one another, and then uses them to simplify the goal.
+# #+BEGIN_SRC lean
+# section
+# variables (u w x x' y y' z : ℕ) (p : ℕ → Prop)
+
+# -- BEGIN
+# example (h₁ : x = y + z) (h₂ : p (y + z)) :
+#   p x  :=
+# by simp_all
+
+# example (h₁ : x + 0 = x') (h₂ : y + 0 = y') : x + y + 0 = x' + y' :=
+# by simp_all
+# -- END
+# end
+# #+END_SRC
+
+One thing that makes the simplifier especially useful its capabilities
+can grow as a library develops. For example, suppose we define a list
+operation that symmetrizes its input by appending its reversal:
+#+BEGIN_SRC lean
+open list
+universe u  
+variables {α : Type} (x y z : α) (xs ys zs : list α)
+
+def mk_symm (xs : list α) := xs ++ reverse xs
+#+END_SRC
+Then for any list =xs=, =reverse (mk_symm xs)= is equal to =xs=, which
+can easily be proved by unfolding the definition:
+#+BEGIN_SRC lean
+open list
+universe u  
+variables {α : Type} (x y z : α) (xs ys zs : list α)
+
+-- BEGIN
+def mk_symm (xs : list α) := xs ++ reverse xs
+
+theorem reverse_mk_symm (xs : list α) : reverse (mk_symm xs) = mk_symm xs :=
+by { unfold mk_symm, simp }
+-- END
+#+END_SRC
+Or even more simply, 
+#+BEGIN_SRC lean
+open list
+universe u  
+variables {α : Type} (x y z : α) (xs ys zs : list α)
+
+-- BEGIN
+def mk_symm (xs : list α) := xs ++ reverse xs
+
+theorem reverse_mk_symm (xs : list α) : reverse (mk_symm xs) = mk_symm xs :=
+by simp [mk_symm]
+-- END
+#+END_SRC
+We can now use this theorem to prove new results:
+#+BEGIN_SRC lean
+open list
+universe u  
+variables {α : Type} (x y z : α) (xs ys zs : list α)
+
+def mk_symm (xs : list α) := xs ++ reverse xs
+
+theorem reverse_mk_symm (xs : list α) : reverse (mk_symm xs) = mk_symm xs :=
+by simp [mk_symm]
+
+-- BEGIN
+example (xs ys : list ℕ) : reverse (xs ++ mk_symm ys) = mk_symm ys ++ reverse xs :=
+by simp [reverse_mk_symm]
+
+example (xs ys : list ℕ) (p : list ℕ → Prop)
+  (h : p (reverse (xs ++ (mk_symm ys)))) : p (mk_symm ys ++ reverse xs) :=
+by simp [reverse_mk_symm] at h; assumption
+-- END
+#+END_SRC
+But using =reverse_mk_symm= is generally the right thing to do, and it
+would be nice if users did not have to invoke it explicitly. We can
+achieve that by marking it as a simplification rule when the theorem
+is defined:
+#+BEGIN_SRC lean
+open list
+universe u  
+variables {α : Type} (x y z : α) (xs ys zs : list α)
+
+def mk_symm (xs : list α) := xs ++ reverse xs
+
+-- BEGIN
+@[simp] theorem reverse_mk_symm (xs : list α) : reverse (mk_symm xs) = mk_symm xs :=
+by simp [mk_symm]
+
+example (xs ys : list ℕ) : reverse (xs ++ mk_symm ys) = mk_symm ys ++ reverse xs :=
+by simp
+
+example (xs ys : list ℕ) (p : list ℕ → Prop)
+  (h : p (reverse (xs ++ (mk_symm ys)))) : p (mk_symm ys ++ reverse xs) :=
+by simp at h; assumption
+-- END
+#+END_SRC
+The notation =@[simp]= declares =reverse_mk_symm= to have the =[simp]=
+attribute, and can be spelled out more explicitly:
+#+BEGIN_SRC lean
+open list
+universe u  
+variables {α : Type} (x y z : α) (xs ys zs : list α)
+
+def mk_symm (xs : list α) := xs ++ reverse xs
+
+-- BEGIN
+attribute [simp] 
+theorem reverse_mk_symm (xs : list α) : reverse (mk_symm xs) = mk_symm xs :=
+by simp [mk_symm]
+-- END
+
+example (xs ys : list ℕ) : reverse (xs ++ mk_symm ys) = mk_symm ys ++ reverse xs :=
+by simp
+
+example (xs ys : list ℕ) (p : list ℕ → Prop)
+  (h : p (reverse (xs ++ (mk_symm ys)))) : p (mk_symm ys ++ reverse xs) :=
+by simp at h; assumption
+#+END_SRC
+The attribute can also be applied any time after the theorem is
+declared:
+#+BEGIN_SRC lean
+open list
+universe u  
+variables {α : Type} (x y z : α) (xs ys zs : list α)
+
+def mk_symm (xs : list α) := xs ++ reverse xs
+
+-- BEGIN
+theorem reverse_mk_symm (xs : list α) : reverse (mk_symm xs) = mk_symm xs :=
+by simp [mk_symm]
+
+attribute [simp] reverse_mk_symm
+
+example (xs ys : list ℕ) : reverse (xs ++ mk_symm ys) = mk_symm ys ++ reverse xs :=
+by simp
+
+example (xs ys : list ℕ) (p : list ℕ → Prop)
+  (h : p (reverse (xs ++ (mk_symm ys)))) : p (mk_symm ys ++ reverse xs) :=
+by simp at h; assumption
+-- END
+#+END_SRC
+Once the attribute is applied, however, there is no way to remove it;
+it persists in any file that imports the one where the attribute is
+assigned. As we will seed in [[file:06_Interacting_with_Lean.org::#Attributes][Section 6.4]], one can limit the scope of
+an attribute to the current file or section using the =local
+attribute= command:
+#+BEGIN_SRC lean
+open list
+universe u  
+variables {α : Type} (x y z : α) (xs ys zs : list α)
+
+def mk_symm (xs : list α) := xs ++ reverse xs
+
+theorem reverse_mk_symm (xs : list α) : reverse (mk_symm xs) = mk_symm xs :=
+by simp [mk_symm]
+
+-- BEGIN
+section
+local attribute [simp] reverse_mk_symm
+
+example (xs ys : list ℕ) : reverse (xs ++ mk_symm ys) = mk_symm ys ++ reverse xs :=
+by simp
+
+example (xs ys : list ℕ) (p : list ℕ → Prop)
+  (h : p (reverse (xs ++ (mk_symm ys)))) : p (mk_symm ys ++ reverse xs) :=
+by simp at h; assumption
+
+end
+-- END
+#+END_SRC
+Outside the section, the simplifier will no longer use
+=reverse_mk_symm= by default.
+
+You can even create your own sets of simplifier rules, to be applied in
+special situations.
+#+BEGIN_SRC lean
+open list
+universe u  
+variables {α : Type} (x y z : α) (xs ys zs : list α)
+
+def mk_symm (xs : list α) := xs ++ reverse xs
+
+theorem reverse_mk_symm (xs : list α) : reverse (mk_symm xs) = mk_symm xs :=
+by simp [mk_symm]
+
+-- BEGIN
+run_cmd mk_simp_attr `my_simps
+
+attribute [my_simps] reverse_mk_symm
+
+example (xs ys : list ℕ) : reverse (xs ++ mk_symm ys) = mk_symm ys ++ reverse xs :=
+by simp with my_simps
+
+example (xs ys : list ℕ) (p : list ℕ → Prop)
+  (h : p (reverse (xs ++ (mk_symm ys)))) : p (mk_symm ys ++ reverse xs) :=
+by simp with my_simps at h; assumption
+-- END
+#+END_SRC
+The command =run_cmd mk_simp_attr `my_simps= creates a new attribute
+=[my_simps]=. (The backtick is used to indicate that =my_simps= is a
+new name, something that is explained more fully in [[https://leanprover.github.io/programming_in_lean/][Programming in
+Lean]].) The command =simp with my_simps= then adds all the theorems
+that have been marked with attribute =[my_simps]= to the default set
+of theorems marked with attribute =[simp]= before applying =[simp]=,
+and similarly with =simp at h with my_simps=. 
+
+Note that the various =simp= options we have discussed --- giving an
+explicit list of rules, using =at= to specify the location, and using
+=with= to add additional simplifier rules --- can be combined, but the
+order they are listed is rigid. You can see the correct order in an
+editor by placing the cursor on the =simp= identifier to see the
+documentation string that is associated with it.
+
+There are two additional modifiers that are useful. By default, =simp=
+includes all theorems that have been marked with the attribute
+=[simp]=. Writing =simp only= excludes these defaults, allowing you to
+use a more explicitly crafted list of rules. Alternatively, writing
+=simp without t= filters =t= and removes it from the set of
+simplification rules. In the examples below, =without= and =only= are
+used to block the application of =reverse_mk_symm=.
+#+BEGIN_SRC lean
+open list
+universe u  
+variables {α : Type} (x y z : α) (xs ys zs : list α)
+
+def mk_symm (xs : list α) := xs ++ reverse xs
+
+theorem reverse_mk_symm (xs : list α) : reverse (mk_symm xs) = mk_symm xs :=
+begin unfold mk_symm, simp end
+
+-- BEGIN
+attribute [simp] reverse_mk_symm
+
+example (xs ys : list ℕ) (p : list ℕ → Prop)
+  (h : p (reverse (xs ++ (mk_symm ys)))) : p (mk_symm ys ++ reverse xs) :=
+by { simp at h, assumption }
+
+example (xs ys : list ℕ) (p : list ℕ → Prop)
+  (h : p (reverse (xs ++ (mk_symm ys)))) : p (reverse (mk_symm ys) ++ reverse xs) :=
+by { simp without reverse_mk_symm at h, assumption }
+
+example (xs ys : list ℕ) (p : list ℕ → Prop)
+  (h : p (reverse (xs ++ (mk_symm ys)))) : p (reverse (mk_symm ys) ++ reverse xs) :=
+by { simp only [reverse_append] at h, assumption }
+-- END
 #+END_SRC
 
 # TODO(Jeremy): still need to:
@@ -1158,224 +1711,19 @@ by simp [h, h'^.symm]
 #
 #   Describe drewrite and dsimp
 #   Describe erewrite
-#   Describe unfold
 #   In the chapter on function definitions, write about using
 #     the generated equations.
 #   Use the simplifier in inductive proofs later on
 
-# TODO(Jeremy): This is old text, describing the rewrite tactic in
-# Lean 2.
+** Exercises
 
-# The notation =*t= instructs the rewriter to apply the rewrite =t= zero
-# or more times, while the notation =+t= instructs the rewriter to use
-# it at least once. Note that rewriting with =*t= never fails.
-# #+BEGIN_SRC lean
-# import data.nat
-# open nat algebra
+1. Go back to the exercises in [[file:02_Dependent_Type_Theory.org::#Dependent_Type_Theory][Chapter 2]] to [[file:04_Quantifiers_and_Equality.org::#Quantifiers_and_Equality][Chapter 4]] and redo as many
+   as you can now with tactic proofs, using also =rw= and =simp= as
+   appropriate.
 
-# example (x y : ℕ) : (x + y) * (x + y) = x * x + y * x + x * y + y * y :=
-# by rewrite [*left_distrib, *right_distrib, -add.assoc]
-# #+END_SRC
-
-# To avoid non-termination, the =rewriter= tactic has a limit on the
-# maximum number of iterations performed by rewriting steps of the form
-# =*t= and =+t=. For example, without this limit, the tactic =rewrite
-# *add.comm= would make Lean diverge on any goal that contains a
-# sub-term of the form =t + s= since commutativity would be always
-# applicable. The limit can be modified by setting the option
-# =rewriter.max_iter=.
-
-# The notation =rewrite n t=, where =n=, is a positive number indicates
-# that =t= must be applied exactly =n= times. Similarly, =rewrite n>t=
-# is notation for at most =n= times.
-
-# A pattern =p= can be optionally provided to a rewriting step =t= using
-# the notation ={p}t= .  It allows us to specify where the rewrite
-# should be applied. This feature is particularly useful for rewrite
-# rules such as commutativity =a + b = b + a= which may be applied to
-# many different sub-terms. A pattern may contain placeholders. In the
-# following example, the pattern =b + _= instructs the =rewrite= tactic
-# to apply commutativity to the first term that matches =b + _=, where
-# =_= can be matched with an arbitrary term.
-# #+BEGIN_SRC lean
-# import data.nat
-# open nat algebra
-# -- BEGIN
-# example (a b c : ℕ) : a + b + c = a + c + b :=
-# begin
-#   rewrite [add.assoc, {b + _}add.comm, -add.assoc]
-# end
-# -- END
-# #+END_SRC
-# In the example above, the first step rewrites =a + b + c= to =a + (b +
-# c)=.  Then, ={b + _}add.comm= applies commutativity to the term =b +
-# c=. Without the pattern ={b + _}=, the tactic would instead rewrite
-# =a + (b + c)= to =(b + c) + a=.  Finally, =-add.assoc= applies
-# associativity in the "reverse direction" rewriting =a + (c + b)= to
-# =a + c + b=.
-
-# Multiple hypotheses can be specified in the same =at= clause.
-# #+BEGIN_SRC lean
-# import data.nat
-# open nat algebra
-# -- BEGIN
-# variables (a b : ℕ)
-
-# example (h₁ : a + 0 = 0) (h₂ : b + 0 = 0) : a + b = 0 :=
-# begin
-#   rewrite add_zero at (h₁, h₂),
-#   rewrite [h₁, h₂]
-# end
-# -- END
-# #+END_SRC
-
-# You may also use =t at *= to indicate that all hypotheses and the goal should
-# be rewritten using =t=. The tactic step fails if none of them can be rewritten.
-# The notation =t at * ⊢= applies =t= to all hypotheses. You can enter
-# the symbol =⊢= by typing =\|-=.
-# #+BEGIN_SRC lean
-# import data.nat
-# open nat algebra
-# -- BEGIN
-# variables (a b : ℕ)
-
-# example (h₁ : a + 0 = 0) (h₂ : b + 0 = 0) : a + b + 0 = 0 :=
-# begin
-#   rewrite add_zero at *,
-#   rewrite [h₁, h₂]
-# end
-# -- END
-# #+END_SRC
-# The step =add_zero at *= rewrites the hypotheses =h₁=, =h₂= and the main goal
-# using the =add_zero (x : ℕ) : x + 0 = x=, producing =a = 0=, =b = 0= and
-# =a + b = 0= respectively.
-
-# Given a rewrite =(t : l = r)=, the tactic =rewrite t= by default
-# locates a sub-term =s= which matches the left-hand-side =l=, and then
-# replaces all occurrences of =s= with the corresponding
-# right-hand-side. The notation =at {i_1, ..., i_k}= can be used to
-# restrict which occurrences of the sub-term =s= are replaced. For
-# example, =rewrite t at {1, 3}= specifies that only the first and third
-# occurrences should be replaced.
-# #+BEGIN_SRC lean
-# import data.nat
-# open ℕ
-# -- BEGIN
-# variables (f : ℕ → ℕ → ℕ → ℕ) (a b : ℕ)
-
-# example (h₁ : a = b) (h₂ : f b a b = 0) : f a a a = 0 :=
-# by rewrite [h₁ at {1, 3}, h₂]
-# -- END
-# #+END_SRC
-# Similarly, =rewrite t at h {1, 3}= specifies that =t= must be applied
-# to hypothesis =h= and only the first and third occurrences must be
-# replaced. You can also specify which occurrences should not be
-# replaced using the notation =rewrite t at -{i_1, ..., i_k}=. Here is
-# the previous example using this feature.
-# #+BEGIN_SRC lean
-# import data.nat
-# open ℕ
-
-# variables (f : ℕ → ℕ → ℕ → ℕ) (a b : ℕ)
-# -- BEGIN
-# example (h₁ : a = b) (h₂ : f b a b = 0) : f a a a = 0 :=
-# by rewrite [h₁ at -{2}, h₂]
-# -- END
-# #+END_SRC
-
-# The =rewrite= tactic also supports reduction steps: =↑f=, =▸*=, =↓t=,
-# and =▸t=.  The step =↑f= unfolds =f= and performs beta/iota reduction
-# and simplify projections.  This step fails if there is no =f= to be
-# unfolded. The step =▸*= is similar to =↑f=, but does not take a
-# constant to unfold as argument, therefore it never fails.  The fold
-# step =↓t= unfolds the head symbol of =t=, then search for the result
-# in the goal (or a given hypothesis), and replaces any match with
-# =t=. Finally, =▸t= tries to reduce the goal (or a given hypothesis) to
-# =t=, and fails if it is not convertible to =t=.  (The up arrow is
-# entered with =\u=, the down arrow is entered with =\d=, and the right
-# triangle is entered with =\t=. You can also use the ASCII alternatives
-# =^f=, =>*=, =<d t=, and => t= for =↑f=, =▸*=, =↓t=, and =▸t=,
-# respectively.)
-
-# #+BEGIN_SRC lean
-# import data.nat
-# open nat
-# -- BEGIN
-# definition double (x : ℕ) := x + x
-
-# variable f : ℕ → ℕ
-
-# example (x y : ℕ) (h₁ : double x = 0) (h₃ : f 0 = 0) : f (x + x) = 0 :=
-# by rewrite [↑double at h₁, h₁, h₃]
-# -- END
-# #+END_SRC
-# The step =↑double at h₁= unfolds =double= in the hypothesis =h₁=.
-# The notation =rewrite ↑[f_1, ..., f_n]= is shorthand for
-# =rewrite [↑f_1, ..., ↑f_n]=
-
-# The tactic =esimp= is a shorthand for =rewrite ▸*=. Here are two simple examples:
-# #+BEGIN_SRC lean
-# open sigma ℕ
-
-# example (x y : ℕ) (h : (fun (a : ℕ), pr1 ⟨a, y⟩) x = 0) : x = 0 :=
-# begin
-#   esimp at h,
-#   exact h
-# end
-
-# example (x y : ℕ) (h : x = 0) : (fun (a : ℕ), pr1 ⟨a, y⟩) x = 0 :=
-# begin
-#   esimp,
-#   exact h
-# end
-# #+END_SRC
-# Here is an example where the fold step is used to replace =a + 1= with =f a=
-# in the main goal.
-# #+BEGIN_SRC lean
-# open nat
-
-# definition foo [irreducible] (x : ℕ) := x + 1
-
-# example (a b : ℕ) (h : foo a = b) : a + 1 = b :=
-# begin
-#   rewrite ↓foo a,
-#   exact h
-# end
-# #+END_SRC
-
-# Here is another example: given any type =α=, we show that the =list α=
-# append operation =s ++ t= is associative.
-# #+BEGIN_SRC lean
-# import data.list
-# open list
-# variable {α : Type}
-
-# theorem append_assoc : ∀ (s t u : list α), s ++ t ++ u = s ++ (t ++ u)
-# | append_assoc nil t u      := by apply rfl
-# | append_assoc (a :: l) t u :=
-#   begin
-#     rewrite ▸ a :: (l ++ t ++ u) = _,
-#     rewrite append_assoc
-#   end
-# #+END_SRC
-# We discharge the inductive cases using the =rewrite= tactic. The base
-# case is solved by applying reflexivity, because =nil ++ t ++ u= and
-# =nil ++ (t ++ u)= are definitionally equal. In the inductive step, we
-# first reduce the goal =a :: s ++ t ++ u = a :: s ++ (t ++ u)= to =a ::
-# (s ++ t ++ u) = a :: s ++ (t ++ u)= by applying the reduction step =▸
-# a :: (l ++ t ++ u) = _=.  The idea is to expose the term =l ++ t ++
-# u=, which can be rewritten using the inductive hypothesis
-# =append_assoc (s t u : list α) : s ++ t ++ u = s ++ (t ++ u)=. Notice
-# that we used a placeholder =_= in the right-hand-side of this
-# reduction step; this placeholder is unified with the right-hand-side
-# of the main goal. As a result, we do not have the copy the right-hand
-# side of the goal.
-
-# There are two variants of =rewrite=, namely =krewrite= and =xrewrite=,
-# that are more aggressive about matching patterns. =krewrite= will
-# unfold definitions as long as the head symbol matches, for example,
-# when trying to match a pattern =f p= with an expression =f t=. In
-# contrast, =xrewrite= will unfold all definitions that are not marked
-# irreducible. Both are computationally expensive and should be used
-# sparingly. =krewrite= is often useful when matching patterns requires
-# unfolding projections in an algebraic structure.
+2. Use tactic combinators to obtain a one line proof of the following:
+   #+BEGIN_SRC lean
+   example (p q r : Prop) (hp : p) : 
+   (p ∨ q ∨ r) ∧ (q ∨ p ∨ r) ∧ (q ∨ p ∨ r) :=
+   by admit
+   #+END_SRC
