@@ -466,8 +466,8 @@ important way of defining new objects.
 #+BEGIN_SRC lean
 definition foo : (ℕ → ℕ) → ℕ := λ f, f 0
 
-#check foo    -- ℕ
-#print foo    -- λ (f : ℕ → ℕ), f 0
+check foo    -- (ℕ → ℕ) → ℕ
+print foo    -- λ (f : ℕ → ℕ), f 0
 #+END_SRC
 We can omit the type when Lean has enough information to infer it:
 #+BEGIN_SRC lean
