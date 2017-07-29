@@ -583,11 +583,13 @@ abbreviations enhance or diminish readability.
 
 *** Negation and Falsity
 
-Negation, =¬p= is actually defined to be =p → false=, so we obtain
+Negation, =¬p=, is actually defined to be =p → false=, so we obtain
 =¬p= by deriving a contradiction from =p=. Similarly, the expression
 =hnp hp= produces a proof of =false= from =hp : p= and =hnp : ¬p=. The
 next example uses both these rules to produce a proof of =(p → q) → ¬q
 → ¬p=.
+(The symbol =¬= is produced by typing =\not=.)
+
 #+BEGIN_SRC lean
 variables p q : Prop
 -- BEGIN
@@ -634,9 +636,9 @@ canonical proof, =trivial=.
 *** Logical Equivalence
 
 The expression =iff.intro h1 h2= produces a proof of =p ↔ q= from
-=h1 : p → q= and =h2 : q → p=. The expression =iff.elim_left H=
+=h1 : p → q= and =h2 : q → p=. The expression =iff.elim_left h=
 produces a proof of =p → q= from =h : p ↔ q=. Similarly,
-=iff.elim_right H= produces a proof of =q → p= from =h : p ↔ q=.  Here
+=iff.elim_right h= produces a proof of =q → p= from =h : p ↔ q=.  Here
 is a proof of =p ∧ q ↔ q ∧ p=:
 #+BEGIN_SRC lean
 variables p q : Prop
@@ -732,7 +734,7 @@ to show =q=.
 The introduction and elimination rules we have seen so far are all
 constructive, which is to say, they reflect a computational
 understanding of the logical connectives based on the
-propositions-as-types correspondence. Ordinary classical logic adds to
+propositions-as-typs correspondence. Ordinary classical logic adds to
 this the law of the excluded middle, =p ∨ ¬p=. To use this principle,
 you have to open the classical namespace.
 #+BEGIN_SRC lean
