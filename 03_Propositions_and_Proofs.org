@@ -768,7 +768,7 @@ out a proof by contradiction, something which is not generally
 possible in constructive logic. As an exercise, you might try proving
 the converse, that is, showing that =em= can be proved from =dne=.
 
-The classical axioms also gives you access to additional
+The classical axioms also give you access to additional
 patterns of proof that can be justified by appeal to =em=. For
 example, one can carry out a proof by cases:
 #+BEGIN_SRC lean
