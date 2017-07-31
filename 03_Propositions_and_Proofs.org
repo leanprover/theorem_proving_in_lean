@@ -734,7 +734,7 @@ to show =q=.
 The introduction and elimination rules we have seen so far are all
 constructive, which is to say, they reflect a computational
 understanding of the logical connectives based on the
-propositions-as-typs correspondence. Ordinary classical logic adds to
+propositions-as-types correspondence. Ordinary classical logic adds to
 this the law of the excluded middle, =p ∨ ¬p=. To use this principle,
 you have to open the classical namespace.
 #+BEGIN_SRC lean
