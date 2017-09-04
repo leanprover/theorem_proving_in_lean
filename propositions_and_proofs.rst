@@ -236,7 +236,17 @@ Notice, by the way, that the original theorem ``t1`` is true for *any* propositi
     theorem t1 (p q : Prop) (hp : p) (hq : q) : p := hp
     #check t1
 
-The type of ``t1`` is now ``∀ p q : Prop, p → q → p``. We can read this as the assertion "for every pair of propositions ``p q``, we have ``p → q → p``." The symbol ``∀`` is alternate syntax for ``Π``, and later we will see how Pi types let us model universal quantifiers more generally. For the moment, however, we will focus on theorems in propositional logic, generalized over the propositions. We will tend to work in sections with variables over the propositions, so that they are generalized for us
+The type of ``t1`` is now ``∀ p q : Prop, p → q → p``. We can read this as the assertion "for every pair of propositions ``p q``, we have ``p → q → p``." The symbol ``∀`` is alternate syntax for ``Π``, and later we will see how Pi types let us model universal quantifiers more generally.
+
+For example, we could move all parameters to the right of the colon,
+
+.. code-block:: lean
+
+    theorem t1' : Π (p q : Prop), p → q → p := λ (p q : Prop) (hp : p) (hq : q), hp
+
+and ``#check t1`` would still give ``∀ p q : Prop, p → q → p``.
+
+For the moment, however, we will focus on theorems in propositional logic, generalized over the propositions, and we will tend to work in sections with variables over the propositions, so that they are generalized for us
 automatically.
 
 When we generalize ``t1`` in that way, we can then apply it to different pairs of propositions, to obtain different instances of the general theorem.
