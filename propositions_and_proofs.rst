@@ -73,6 +73,26 @@ We could represent this as follows:
 
     end hide
 
+Alternatively, we could define ``modus_ponens`` using a Pi type, as we did with ``and_comm``:
+
+.. code-block:: lean
+
+    namespace hide
+
+    constant implies : Prop → Prop → Prop
+    constant Proof : Prop → Type
+
+    -- BEGIN
+    constant modus_ponens' : Π (p q : Prop),  
+      Proof (implies p q) →  Proof p → Proof q
+
+    #check modus_ponens p q   -- Proof (implies p q) → Proof p → Proof q
+    #check modus_ponens' p q  -- Proof (implies p q) → Proof p → Proof q
+    -- END
+
+    end hide
+
+
 Systems of natural deduction for propositional logic also typically rely on the following rule:
 
     Suppose that, assuming ``p`` as a hypothesis, we have a proof of ``q``. Then we can "cancel" the hypothesis and obtain a proof of ``implies p q``.
