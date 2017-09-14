@@ -573,7 +573,7 @@ This is a good place to introduce another device Lean offers to help structure l
 
 Internally, the expression ``have h : p, from s, t`` produces the term ``(λ (h : p), t) s``. In other words, ``s`` is a proof of ``p``, ``t`` is a proof of the desired conclusion assuming ``h : p``, and the two are combined by a lambda abstraction and application. This simple device is extremely useful when it comes to structuring long proofs, since we can use intermediate ``have``'s as stepping stones leading to the final goal.
 
-Lean also supports a structured way of reasoning backwards from a goal, which models the "suffices to show" construction in ordinary mathematics. The next example simply permutes that last two lines in the previous proof.
+Lean also supports a structured way of reasoning backwards from a goal, which models the "suffices to show" construction in ordinary mathematics. The next example simply permutes the last two lines in the previous proof.
 
 .. code-block:: lean
 
