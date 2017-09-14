@@ -265,7 +265,7 @@ Here is an example of a calculation in the natural numbers that uses substitutio
     variables x y z : ℤ
 
     example (x y z : ℕ) : x * (y + z) = x * y + x * z := mul_add x y z
-    example (x y z : ℕ) : x * (y + z) = x * y + x * z := mul_add x y z
+    example (x y z : ℕ) : (x + y) * z = x * z + y * z := add_mul x y z
     example (x y z : ℕ) : x + y + z = x + (y + z) := add_assoc x y z
 
     example (x y : ℕ) : 
