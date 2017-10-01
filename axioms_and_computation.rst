@@ -122,7 +122,7 @@ Suppose that for ``α : Type`` we define the ``set α := α → Prop`` to denote
     notation e ∈ a := mem e a 
 
     theorem setext {a b : set α} (h : ∀ x, x ∈ a ↔ x ∈ b) : a = b :=
-    funext (take x, propext (h x))
+    funext (assume x, propext (h x))
 
     end set
     -- END
@@ -147,7 +147,7 @@ We can then proceed to define the empty set and set intersection, for example, a
     instance has_mem_set (α : Type u) : has_mem α (set α) := ⟨mem⟩
 
     theorem setext {a b : set α} (h : ∀ x, x ∈ a ↔ x ∈ b) : a = b :=
-    funext (take x, propext (h x))
+    funext (assume x, propext (h x))
 
     -- BEGIN
     definition empty : set α := λ x, false
@@ -157,16 +157,16 @@ We can then proceed to define the empty set and set intersection, for example, a
     notation a ∩ b := inter a b
 
     theorem inter_self (a : set α) : a ∩ a = a :=
-    setext (take x, and_self _)
+    setext (assume x, and_self _)
 
     theorem inter_empty (a : set α) : a ∩ ∅ = ∅ :=
-    setext (take x, and_false _)
+    setext (assume x, and_false _)
 
     theorem empty_inter (a : set α) : ∅ ∩ a = ∅ :=
-    setext (take x, false_and _)
+    setext (assume x, false_and _)
 
     theorem inter.comm (a b : set α) : a ∩ b = b ∩ a :=
-    setext (take x, and_comm _ _)
+    setext (assume x, and_comm _ _)
     -- END
 
     end set
@@ -179,7 +179,7 @@ The following is an example of how function extensionality blocks computation in
     def f₁  (x : ℕ) := x
     def f₂ (x : ℕ) := 0 + x
 
-    theorem feq : f₁ = f₂ := funext (take x, (zero_add x).symm)
+    theorem feq : f₁ = f₂ := funext (assume x, (zero_add x).symm)
 
     def val : ℕ := eq.rec_on feq (0 : ℕ)
 
@@ -236,7 +236,7 @@ In its most basic form, the quotient construction does not even require ``r`` to
     -- END
     end hide
 
-The first one forms a type ``quot r`` given a type ``α`` by any binary relation ``r`` on ``α``. The second maps ``α`` to ``quot α``, so that for any ``a : α``, ``quot.mk a`` is an element of ``quot r``. The third principle, ``quot.ind``, says that every element of ``quot.mk a`` is of this form. Given any function ``f`` and a proof ``h`` that respects the relation ``r``, ``quot.lift f h`` is the corresponding function on ``quot r``. The idea is that for any element ``a`` in ``α``, ``quot.lift f h`` is the function which maps ``quot.mk r a`` to ``f a``, wherein ``h`` shows that this fuction is well defined. In fact, the computation principle is declared as a reduction rule, as the proof below makes clear.
+The first one forms a type ``quot r`` given a type ``α`` by any binary relation ``r`` on ``α``. The second maps ``α`` to ``quot α``, so that for any ``a : α``, ``quot.mk a`` is an element of ``quot r``. The third principle, ``quot.ind``, says that every element of ``quot.mk a`` is of this form. Given any function ``f`` and a proof ``h`` that respects the relation ``r``, ``quot.lift f h`` is the corresponding function on ``quot r``. The idea is that for any element ``a`` in ``α``, ``quot.lift f h`` is the function which maps ``quot.mk r a`` to ``f a``, wherein ``h`` shows that this function is well defined. In fact, the computation principle is declared as a reduction rule, as the proof below makes clear.
 
 .. code-block:: lean
 
@@ -339,18 +339,7 @@ Given a type ``α``, a relation ``r`` on ``α``, and a proof ``p`` that ``r`` is
 
     end hide
 
-The constants ``quotient.mk``, ``quotient.ind``, ``quotient.lift``, and
-``quotient.sound`` are nothing more than the specializations of the
-corresponding elements of ``quot``. The fact that type class inference
-can find the setoid associated to a type ``α`` brings a number of
-benefits. First, we can use the notation ``a ≈ b`` (entered with ``\eq``
-in Emacs) for ``setoid.r a b``, where the instance of ``setoid`` is
-implicit in the notation ``setoid.r``. We can use the generic theorems
-``setoid.refl``, ``setoid.symm``, ``setoid.trans`` to reason about the
-relation. Specifically with quotients we can use the generic notation
-``⟦a⟧`` for ``quot.mk setoid.r`` where the instance of ``setoid`` is
-implicit in the notation ``setoid.r``, as well as the theorem
-``quotient.exact``:
+The constants ``quotient.mk``, ``quotient.ind``, ``quotient.lift``, and ``quotient.sound`` are nothing more than the specializations of the corresponding elements of ``quot``. The fact that type class inference can find the setoid associated to a type ``α`` brings a number of benefits. First, we can use the notation ``a ≈ b`` (entered with ``\eq`` in Emacs) for ``setoid.r a b``, where the instance of ``setoid`` is implicit in the notation ``setoid.r``. We can use the generic theorems ``setoid.refl``, ``setoid.symm``, ``setoid.trans`` to reason about the relation. Specifically with quotients we can use the generic notation ``⟦a⟧`` for ``quot.mk setoid.r`` where the instance of ``setoid`` is implicit in the notation ``setoid.r``, as well as the theorem ``quotient.exact``:
 
 .. code-block:: lean
 
@@ -361,15 +350,9 @@ implicit in the notation ``setoid.r``, as well as the theorem
       ∀ {α : Type u} [setoid α] {a b : α}, ⟦a⟧ = ⟦b⟧ → a ≈ b)
     -- END
 
-Together with ``quotient.sound``, this implies that the elements of the
-quotient correspond exactly to the equivalence classes of elements in
-``α``.
+Together with ``quotient.sound``, this implies that the elements of the quotient correspond exactly to the equivalence classes of elements in ``α``.
 
-Recall that in the standard library, ``α × β`` represents the Cartesian
-product of the types ``α`` and ``β``. To illustrate the use of
-quotients, let us define the type of *unordered* pairs of elements of a
-type ``α`` as a quotient of the type ``α × α``. First, we define the
-relevant equivalence relation:
+Recall that in the standard library, ``α × β`` represents the Cartesian product of the types ``α`` and ``β``. To illustrate the use of quotients, let us define the type of *unordered* pairs of elements of a type ``α`` as a quotient of the type ``α × α``. First, we define the relevant equivalence relation:
 
 .. code-block:: lean
 
@@ -380,12 +363,7 @@ relevant equivalence relation:
 
     infix `~` := eqv
 
-The next step is to prove that ``eqv`` is in fact an equivalence
-relation, which is to say, it is reflexive, symmetric and transitive. We
-can prove these three facts in a convenient and readable way by using
-dependent pattern matching to perform case-analysis and break the
-hypotheses into pieces that are then reassembled to produce the
-conclusion.
+The next step is to prove that ``eqv`` is in fact an equivalence relation, which is to say, it is reflexive, symmetric and transitive. We can prove these three facts in a convenient and readable way by using dependent pattern matching to perform case-analysis and break the hypotheses into pieces that are then reassembled to produce the conclusion.
 
 .. code-block:: lean
 
@@ -401,7 +379,7 @@ conclusion.
 
     private theorem eqv.refl {α : Type u} : 
       ∀ p : α × α, p ~ p :=
-    take p, inl ⟨rfl, rfl⟩
+    assume p, inl ⟨rfl, rfl⟩
 
     private theorem eqv.symm {α : Type u} : 
       ∀ p₁ p₂ : α × α, p₁ ~ p₂ → p₂ ~ p₁
@@ -447,7 +425,7 @@ Now that we have proved that ``eqv`` is an equivalence relation, we can construc
     open or eq
 
     private theorem eqv.refl {α : Type u} : ∀ p : α × α, p ~ p :=
-    take p, inl ⟨rfl, rfl⟩
+    assume p, inl ⟨rfl, rfl⟩
 
     private theorem eqv.symm {α : Type u} : ∀ p₁ p₂ : α × α, p₁ ~ p₂ → p₂ ~ p₁
     | (a₁, a₂) (b₁, b₂) (inl ⟨a₁b₁, a₂b₂⟩) := inl ⟨symm a₁b₁, symm a₂b₂⟩
@@ -481,13 +459,9 @@ Now that we have proved that ``eqv`` is an equivalence relation, we can construc
     end uprod
     -- END
 
-Notice that we locally define the notation ``{a₁, a₂}`` for ordered
-pairs as ``⟦(a₁, a₂)⟧``. This is useful for illustrative purposes, but
-it is not a good idea in general, since the notation will shadow other
-uses of curly brackets, such as for records and sets.
+Notice that we locally define the notation ``{a₁, a₂}`` for ordered pairs as ``⟦(a₁, a₂)⟧``. This is useful for illustrative purposes, but it is not a good idea in general, since the notation will shadow other uses of curly brackets, such as for records and sets.
 
-We can easily prove that ``{a₁, a₂} = {a₂, a₁}`` using ``quot.sound``,
-since we have ``(a₁, a₂) ~ (a₂, a₁)``.
+We can easily prove that ``{a₁, a₂} = {a₂, a₁}`` using ``quot.sound``, since we have ``(a₁, a₂) ~ (a₂, a₁)``.
 
 .. code-block:: lean
 
@@ -501,7 +475,7 @@ since we have ``(a₁, a₂) ~ (a₂, a₁)``.
     open or eq
 
     private theorem eqv.refl {α : Type u} : ∀ p : α × α, p ~ p :=
-    take p, inl ⟨rfl, rfl⟩
+    assume p, inl ⟨rfl, rfl⟩
 
     private theorem eqv.symm {α : Type u} : ∀ p₁ p₂ : α × α, p₁ ~ p₂ → p₂ ~ p₁
     | (a₁, a₂) (b₁, b₂) (inl ⟨a₁b₁, a₂b₂⟩) := inl ⟨symm a₁b₁, symm a₂b₂⟩
@@ -539,13 +513,7 @@ since we have ``(a₁, a₂) ~ (a₂, a₁)``.
     -- END
     end uprod
 
-To complete the example, given ``a : α`` and ``u : uprod α``, we define
-the proposition ``a ∈ u`` which should hold if ``a`` is one of the
-elements of the unordered pair ``u``. First, we define a similar
-proposition ``mem_fn a u`` on (ordered) pairs; then we show that
-``mem_fn`` respects the equivalence relation ``eqv`` with the lemma
-``mem_respects``. This is an idiom that is used extensively in the Lean
-standard library.
+To complete the example, given ``a : α`` and ``u : uprod α``, we define the proposition ``a ∈ u`` which should hold if ``a`` is one of the elements of the unordered pair ``u``. First, we define a similar proposition ``mem_fn a u`` on (ordered) pairs; then we show that ``mem_fn`` respects the equivalence relation ``eqv`` with the lemma ``mem_respects``. This is an idiom that is used extensively in the Lean standard library.
 
 .. code-block:: lean
 
@@ -559,7 +527,7 @@ standard library.
     open or eq
 
     private theorem eqv.refl {α : Type u} : ∀ p : α × α, p ~ p :=
-    take p, inl ⟨rfl, rfl⟩
+    assume p, inl ⟨rfl, rfl⟩
 
     private theorem eqv.symm {α : Type u} : ∀ p₁ p₂ : α × α, p₁ ~ p₂ → p₂ ~ p₁
     | (a₁, a₂) (b₁, b₂) (inl ⟨a₁b₁, a₂b₂⟩) := inl ⟨symm a₁b₁, symm a₂b₂⟩
@@ -899,7 +867,7 @@ definition of ``u`` and ``v``, this implies that they are equal as well.
     lemma p_implies_uv : p → u = v :=
     assume hp : p,
     have hpred : U = V, from
-      funext (take x : Prop,
+      funext (assume x : Prop,
         have hl : (x = true ∨ p) → (x = false ∨ p), from
           assume a, or.inr hp,
         have hr : (x = false ∨ p) → (x = true ∨ p), from
@@ -946,7 +914,7 @@ Putting these last two facts together yields the desired conclusion:
     lemma p_implies_uv : p → u = v :=
     assume hp : p,
     have hpred : U = V, from
-      funext (take x : Prop,
+      funext (assume x : Prop,
         have hl : (x = true ∨ p) → (x = false ∨ p), from
           assume a, or.inr hp,
         have hr : (x = false ∨ p) → (x = true ∨ p), from
@@ -999,7 +967,7 @@ Together with choice, we also get the stronger principle that every proposition 
 
     end hide
 
-In contrast to ``p ∨ ¬ p``, which can only eliminate to ``Prop``, the type ``decidable p`` is equivalent to the sum type ``p ⊕ ¬ p``, which can elminate to any type. It is this data that is needed to write an if-then-else expression.
+In contrast to ``p ∨ ¬ p``, which can only eliminate to ``Prop``, the type ``decidable p`` is equivalent to the sum type ``p ⊕ ¬ p``, which can eliminate to any type. It is this data that is needed to write an if-then-else expression.
 
 As an example of classical reasoning, we use ``some`` to show that if ``f : α → β`` is injective and ``α`` is inhabited, then ``f`` has a left inverse. To define the left inverse ``linv``, we use a dependent if-then-else expression. Recall that ``if h : c then t else e`` is notation for ``dite c (λ h : c, t) (λ h : ¬ c, e)``. In the definition of ``linv``, choice is used twice: first, to show that ``(∃ a : A, f a = b)`` is "decidable," and then to choose an ``a`` such that ``f a = b``. Notice that we make ``prop_decidable`` a local instance to justify the if-then-else expression.
 
@@ -1015,7 +983,7 @@ As an example of classical reasoning, we use ``some`` to show that if ``f : α �
     theorem linv_comp_self {α β : Type} {f : α → β}
         [inhabited α] (inj : injective f) :
       linv f ∘ f = id :=
-    funext (take a,
+    funext (assume a,
       have ex  : ∃ a₁ : α, f a₁ = f a, from exists.intro a rfl,
       have   feq : f (some ex) = f a, from some_spec ex,
       calc linv f (f a) = some ex :  dif_pos ex

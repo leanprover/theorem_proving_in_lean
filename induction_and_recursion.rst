@@ -349,7 +349,7 @@ Generally speaking, the equation compiler processes input of the following form:
 
 Here ``(a : α)`` is a sequence of parameters, ``(b : β)`` is the sequence of arguments on which pattern matching takes place, and ``γ`` is any type, which can depend on ``a`` and ``b``. Each line should contain the same number of patterns, one for each element of ``b``. As we have seen, a pattern is either a variable, a constructor applied to other patterns, or an expression that normalizes to something of that form (where the non-constructors are marked with the ``[pattern]`` attribute). The appearance of constructors prompt case splits, with the arguments to the constructors represented by the given variables. In :numref:`dependent_pattern_matching`, we will see that it is sometimes necessary to include explicit terms in patterns that are needed to make an expression type check, though they do not play a role in pattern matching. These are called "inaccessible terms," for that reason. But we will not need to use such inaccessible terms before :numref:`dependent_pattern_matching`.
 
-As we saw in the last section, the terms ``t₁, ..., tₙ`` can make use of any of the parameters ``a``, as well as any of the variables that are introduced in the corresponding patterns. What makes recursion and induction possible is that they can also involve recursive calls to ``foo``. In this section, we will deal with *structural recursion*, in which the arguments to ``foo`` occuring on the right-hand side of the ``:=`` are subterms of the patterns on the left-hand side. The idea is that they are structurally smaller, and hence appear in the inductive type at an earlier stage. Here are some examples of structural recursion from the last chapter, now defined using the equation compiler:
+As we saw in the last section, the terms ``t₁, ..., tₙ`` can make use of any of the parameters ``a``, as well as any of the variables that are introduced in the corresponding patterns. What makes recursion and induction possible is that they can also involve recursive calls to ``foo``. In this section, we will deal with *structural recursion*, in which the arguments to ``foo`` occurring on the right-hand side of the ``:=`` are subterms of the patterns on the left-hand side. The idea is that they are structurally smaller, and hence appear in the inductive type at an earlier stage. Here are some examples of structural recursion from the last chapter, now defined using the equation compiler:
 
 .. code-block:: lean
 
@@ -495,11 +495,11 @@ To handle such  definitions, the equation compiler uses *course-of-values* recur
     variable (C : ℕ → Type)
 
     #check (@nat.below C : ℕ → Type)
-    
+
     #reduce @nat.below C (3 : nat)
 
     #check (@nat.brec_on C : 
-      Π (n : ℕ), (Π (n : ℕ), nat.below n → C n) → C n)
+      Π (n : ℕ), (Π (n : ℕ), nat.below C n → C n) → C n)
 
 The type ``@nat.below C (3 : nat)`` is a data structure that stores elements of ``C 0``, ``C 1``, and ``C 2``. The course-of-values recursion is implemented by ``nat.brec_on``. It enables us to define the value of a dependent function of type ``Π n : ℕ, C n`` at a particular input ``n`` in terms of all the previous values of the function, presented as an element of ``@nat_below C n``.
 

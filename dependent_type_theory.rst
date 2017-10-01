@@ -67,7 +67,7 @@ What makes simple type theory powerful is that one can build new types out of ot
     #check (p.1, n)        -- ℕ × ℕ
     #check F f             -- ℕ
 
-Once again, you should try some examples of your own.
+Once again, you should try some examples on your own.
 
 Let us dispense with some basic syntax. You can enter the unicode arrow ``→`` by typing ``\to`` or ``\r``. You can also use the ASCII alternative ``->``, so that the expression ``nat -> nat`` and ``nat → nat`` mean the same thing. Both expressions denote the type of functions that take a natural number as input and return a natural number as output. The symbol ``ℕ`` is alternative unicode notation for ``nat``; you can enter it by typing ``\nat``. The unicode symbol ``×`` for the cartesian product is entered ``\times``. We will generally use lower-case greek letters like ``α``, ``β``, and ``γ`` to range over types. You can enter these particular ones with ``\a``, ``\b``, and ``\g``.
 

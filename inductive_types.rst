@@ -296,8 +296,6 @@ enumerated types.
 
 .. code-block:: lean
 
-    import standard
-
     namespace hide
 
     -- BEGIN
@@ -708,7 +706,7 @@ Proving a fact like ``0 + m = m``, however, requires a proof by induction. As ob
     theorem zero_add (n : ℕ) : 0 + n = n :=
     nat.rec_on n
       (show 0 + 0 = 0, from rfl)
-      (take n,
+      (assume n,
         assume ih : 0 + n = n,
         show 0 + succ n = succ n, from
           calc
@@ -747,7 +745,7 @@ For another example, let us prove the associativity of addition, ``∀ m n k, m 
     theorem add_assoc (m n k : ℕ) : m + n + k = m + (n + k) :=
     nat.rec_on k
       (show m + n + 0 = m + (n + 0), from rfl)
-      (take k,
+      (assume k,
         assume ih : m + n + k = m + (n + k),
         show m + n + succ k = m + (n + succ k), from
           calc
@@ -783,7 +781,7 @@ Suppose we try to prove the commutativity of addition. Choosing induction on the
     theorem add_assoc (m n k : ℕ) : m + n + k = m + (n + k) :=
     nat.rec_on k
       (show m + n + 0 = m + (n + 0), from rfl)
-      (take k,
+      (assume k,
         assume ih : m + n + k = m + (n + k),
         show m + n + succ k = m + (n + succ k), from
           calc
@@ -796,7 +794,7 @@ Suppose we try to prove the commutativity of addition. Choosing induction on the
     theorem add_comm (m n : nat) : m + n = n + m :=
     nat.rec_on n
       (show m + 0 = 0 + m, by rw [nat.zero_add, nat.add_zero])
-      (take n,
+      (assume n,
         assume ih : m + n = n + m,
         calc
           m + succ n = succ (m + n) : rfl
@@ -816,7 +814,7 @@ At this point, we see that we need another supporting fact, namely, that ``succ 
     theorem add_assoc (m n k : ℕ) : m + n + k = m + (n + k) :=
     nat.rec_on k
       (show m + n + 0 = m + (n + 0), from rfl)
-      (take k,
+      (assume k,
         assume ih : m + n + k = m + (n + k),
         show m + n + succ k = m + (n + succ k), from
           calc
@@ -829,7 +827,7 @@ At this point, we see that we need another supporting fact, namely, that ``succ 
     theorem succ_add (m n : nat) : succ m + n = succ (m + n) :=
     nat.rec_on n
       (show succ m + 0 = succ (m + 0), from rfl)
-      (take n,
+      (assume n,
         assume ih : succ m + n = succ (m + n),
         show succ m + succ n = succ (m + succ n), from
           calc
@@ -1142,8 +1140,7 @@ Think of this as saying "split on cases as to whether ``m + 3 * k`` is zero or t
     example (hz : p 0) (hs : ∀ n, p (succ n)) (m k : ℕ) : 
       p (m + 3 * k) :=
     begin
-      generalize (m + 3 * k) n,
-      intro n,
+      generalize : m + 3 * k = n,
       cases n,
       { exact hz },  -- goal is p 0
       apply hs       -- goal is a : ℕ ⊢ p (succ a)
@@ -1152,7 +1149,7 @@ Think of this as saying "split on cases as to whether ``m + 3 * k`` is zero or t
 
 Notice that the expression ``m + 3 * k`` is erased by generalize; all that matters is whether it is of the form ``0`` or ``succ a``. This form of ``cases`` will *not* revert any hypotheses that also mention the expression in equation (in this case, ``m + 3 * k``). If such a term appears in a hypothesis and you want to generalize over that as well, you need to ``revert`` it explicitly.
 
-If the expression you case on does not appear in the goal, the ``cases`` tactic uses ``assert`` to put the type of the expression into the context. Here is an example:
+If the expression you case on does not appear in the goal, the ``cases`` tactic uses ``have`` to put the type of the expression into the context. Here is an example:
 
 .. code-block:: lean
 
@@ -1171,7 +1168,7 @@ The theorem ``lt_or_ge m n`` says ``m < n ∨ m ≥ n``, and it is natural to th
     example (p : Prop) (m n : ℕ) 
       (h₁ : m < n → p) (h₂ : m ≥ n → p) : p :=
     begin
-      assert h : m < n ∨ m ≥ n,
+      have h : m < n ∨ m ≥ n,
       { exact lt_or_ge m n },
       cases h with hlt hge,
       { exact h₁ hlt },
@@ -1267,17 +1264,17 @@ Once again, we can reduce the proofs of these, as well as the proof of associati
 
     -- BEGIN
     theorem zero_add (n : ℕ) : 0 + n = n :=
-    by induction n; simph only [add_zero, add_succ]
+    by induction n; simp only [*, add_zero, add_succ]
 
     theorem succ_add (m n : ℕ) : succ m + n = succ (m + n) :=
-    by induction n; simph only [add_zero, add_succ]
+    by induction n; simp only [*, add_zero, add_succ]
 
     theorem add_comm (m n : ℕ) : m + n = n + m :=
     by induction n; 
-         simph only [add_zero, add_succ, succ_add, zero_add]
+         simp only [*, add_zero, add_succ, succ_add, zero_add]
 
     theorem add_assoc (m n k : ℕ) : m + n + k = m + (n + k) :=
-    by induction k; simph only [add_zero, add_succ]
+    by induction k; simp only [*, add_zero, add_succ]
     -- END
 
     end hide
@@ -1306,20 +1303,13 @@ The first instance of the tactic adds ``h' : succ m = succ n`` to the context, a
     example (m n k : ℕ) (h : succ (succ m) = succ (succ n)) : 
       n + k = m + k :=
     begin
-      injections,
-      rw h
-    end
-
-    example (m n k : ℕ) (h : succ (succ m) = succ (succ n)) : 
-      n + k = m + k :=
-    begin
       injections with h' h'',
       rw h''
     end
 
     example (m n k : ℕ) (h : succ (succ m) = succ (succ n)) : 
       n + k = m + k :=
-    by injections; simph
+    by injections; simp *
     -- END
 
 The ``injection`` and ``injections`` tactics will also detect contradictions that arise when different constructors are set equal to one another, and use them to close the goal.
@@ -1459,7 +1449,7 @@ Axiomatic Details
 
 We have described inductive types and their syntax through examples. This section provides additional information for those interested in the axiomatic foundations.
 
-We have seen that the constructor to an inductive type takes *parameters* --- intuitively, the arguments that remain fixed throughout the inductive construction --- and *indices*, the arguments parameterizing the family of types that is simultaneously under construction. Each constructor should have a Pi type, where the arugment types are built up from previously defined types, the parameter and index types, and the inductive family currently being defined. The requirement is that if the latter is present at all, it occurs only *strictly positively*. This means simply that any argument to the constructor in which it occurs is a Pi type in which the inductive type under definition occurs only as the resulting type, where the indices are given in terms of constants and previous arguments.
+We have seen that the constructor to an inductive type takes *parameters* --- intuitively, the arguments that remain fixed throughout the inductive construction --- and *indices*, the arguments parameterizing the family of types that is simultaneously under construction. Each constructor should have a Pi type, where the argument types are built up from previously defined types, the parameter and index types, and the inductive family currently being defined. The requirement is that if the latter is present at all, it occurs only *strictly positively*. This means simply that any argument to the constructor in which it occurs is a Pi type in which the inductive type under definition occurs only as the resulting type, where the indices are given in terms of constants and previous arguments.
 
 Since an inductive type lives in ``Sort u`` for some ``u``, it is reasonable to ask *which* universe levels ``u`` can be instantiated to. Each constructor ``c`` in the definition of a family ``C`` of inductive types is of the form
 
