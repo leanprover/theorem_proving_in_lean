@@ -966,7 +966,7 @@ Incidentally, a tactic expression is really a formal term in Lean, of type ``tac
     example (p q r : Prop) (hr : r) : p ∨ q ∨ r :=
     by my_tac
 
-With a ``begin...end`` block or after a ``by``, Lean's parser uses special mechanisms to parse these expressions, but they are similar to ordinary expressions in Lean like ``x + 2`` and ``list α``. (The annotation ```[...]`` in the definition of ``my_tac`` above invokes the special parsing mechanism here, too.) The book `Programming in Lean <https://leanprover.github.io/programming_in_lean/>`__ provides a fuller introduction to writing tactics and installing them for interactive use. The tactic combinators were discussing here serve as casual entry points to the tactic programming language.
+With a ``begin...end`` block or after a ``by``, Lean's parser uses special mechanisms to parse these expressions, but they are similar to ordinary expressions in Lean like ``x + 2`` and ``list α``. (The annotation ```[...]`` in the definition of ``my_tac`` above invokes the special parsing mechanism here, too.) The book `Programming in Lean <https://leanprover.github.io/programming_in_lean/>`__ provides a fuller introduction to writing tactics and installing them for interactive use. The tactic combinators we're discussing here serve as casual entry points to the tactic programming language.
 
 You will have no doubt noticed by now that tactics can fail. Indeed, it is the "failure" state that causes the *orelse* combinator to backtrack and try the next tactic. The ``try`` combinator builds a tactic that always succeeds, though possibly in a trivial way: ``try t`` executes ``t`` and reports success, even if ``t`` fails. It is equivalent to ``t <|> skip``, where ``skip`` is a tactic that does nothing (and succeeds in doing so). In the next example, the second ``split`` succeeds on the right conjunct ``q ∧ r`` (remember that disjunction and conjunction associate to the right) but fails on the first. The ``try`` tactic ensures that the sequential composition succeeds.
 
@@ -1561,5 +1561,5 @@ Exercises
    .. code-block:: lean
 
        example (p q r : Prop) (hp : p) : 
-       (p ∨ q ∨ r) ∧ (q ∨ p ∨ r) ∧ (q ∨ p ∨ r) :=
+       (p ∨ q ∨ r) ∧ (q ∨ p ∨ r) ∧ (q ∨ r ∨ p) :=
        by admit
