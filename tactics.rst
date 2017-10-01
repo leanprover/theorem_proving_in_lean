@@ -950,7 +950,7 @@ In the first example, the left branch succeeds, whereas in the second one, it is
 
 The tactic tries to solve the left disjunct immediately by assumption; if that fails, it tries to focus on the right disjunct; and if that doesn't work, it invokes the assumption tactic.
 
-Incidentally, a tactic expressions is really formal terms in Lean, of type ``tactic α`` for some ``α``. Tactics can be defined and then applied later on.
+Incidentally, a tactic expression is really a formal term in Lean, of type ``tactic α`` for some ``α``. Tactics can be defined and then applied later on.
 
 .. code-block:: lean
 
