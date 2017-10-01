@@ -305,7 +305,7 @@ There are tactics ``reflexivity``, ``symmetry``, and ``transitivity``, which app
       refl
     end
 
-With these tactic, the proof can be written more elegantly as follows:
+With these tactics, the transitivity proof above can be written more elegantly as follows:
 
 .. code-block:: lean
 
@@ -343,9 +343,9 @@ The ``repeat`` combinator can be used to simplify the last two lines:
       repeat { assumption }
     end
 
-The curly braces introduce a new tactic block; they are equivalent to a using a nested ``begin ... end`` pair, as discussed in the next section.
+The curly braces introduce a new tactic block; they are equivalent to using a nested ``begin ... end`` pair, as discussed in the next section.
 
-There is variant of ``apply`` called ``fapply`` that is more aggressive in creating new subgoals for arguments. Here is an example of how it is used:
+There is a variant of ``apply`` called ``fapply`` that is more aggressive in creating new subgoals for arguments. Here is an example of how it is used:
 
 .. code-block:: lean
 
@@ -491,7 +491,7 @@ After ``cases h`` is applied, there are two goals. In the first, the hypothesis 
       constructor, exact hq, exact hp
     end
 
-In this example, there is only one goal after the ``cases`` tactic is applied, with ``h : p ∧ q`` replaced by a pair of assumptions, ``hp : p`` and ``hq : q``. The constructor applies the unique constructor for conjunction, ``and.intro``. With these tactics, an example from the previous section can be rewritten as follows:
+In this example, there is only one goal after the ``cases`` tactic is applied, with ``h : p ∧ q`` replaced by a pair of assumptions, ``hp : p`` and ``hq : q``. The ``constructor`` tactic applies the unique constructor for conjunction, ``and.intro``. With these tactics, an example from the previous section can be rewritten as follows:
 
 .. code-block:: lean
 
@@ -749,7 +749,7 @@ Lean also has a ``pose`` tactic, similar to the ``note`` tactic, which is used t
       reflexivity
     end
 
-As we ``note``, you can make the type explicit by writing ``pose a : ℕ := 3 * 2``. The difference between ``pose`` and ``have`` is that ``pose`` introduces a local "let" definition, so that the definition of the local constant can be unfolded in the proof.
+As with ``note``, you can make the type explicit by writing ``pose a : ℕ := 3 * 2``. The difference between ``pose`` and ``have`` is that ``pose`` introduces a local "let" definition, so that the definition of the local constant can be unfolded in the proof.
 
 For even more structured proofs, you can nest ``begin...end`` blocks within other ``begin...end`` blocks. In a nested block, Lean focuses on the first goal, and generates an error if it has not been fully solved at the end of the block. This can be helpful in indicating the separate proofs of multiple subgoals introduced by a tactic.
 
