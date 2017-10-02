@@ -305,7 +305,7 @@ There are tactics ``reflexivity``, ``symmetry``, and ``transitivity``, which app
       refl
     end
 
-With these tactic, the proof can be written more elegantly as follows:
+With these tactics, the transitivity proof above can be written more elegantly as follows:
 
 .. code-block:: lean
 
@@ -343,9 +343,9 @@ The ``repeat`` combinator can be used to simplify the last two lines:
       repeat { assumption }
     end
 
-The curly braces introduce a new tactic block; they are equivalent to a using a nested ``begin ... end`` pair, as discussed in the next section.
+The curly braces introduce a new tactic block; they are equivalent to using a nested ``begin ... end`` pair, as discussed in the next section.
 
-There is variant of ``apply`` called ``fapply`` that is more aggressive in creating new subgoals for arguments. Here is an example of how it is used:
+There is a variant of ``apply`` called ``fapply`` that is more aggressive in creating new subgoals for arguments. Here is an example of how it is used:
 
 .. code-block:: lean
 
@@ -477,7 +477,7 @@ After ``cases h`` is applied, there are two goals. In the first, the hypothesis 
       constructor, exact hq, exact hp
     end
 
-In this example, there is only one goal after the ``cases`` tactic is applied, with ``h : p ∧ q`` replaced by a pair of assumptions, ``hp : p`` and ``hq : q``. The constructor applies the unique constructor for conjunction, ``and.intro``. With these tactics, an example from the previous section can be rewritten as follows:
+In this example, there is only one goal after the ``cases`` tactic is applied, with ``h : p ∧ q`` replaced by a pair of assumptions, ``hp : p`` and ``hq : q``. The ``constructor`` tactic applies the unique constructor for conjunction, ``and.intro``. With these tactics, an example from the previous section can be rewritten as follows:
 
 .. code-block:: lean
 
@@ -777,7 +777,7 @@ Lean also has a ``let`` tactic, which is similar to the ``have`` tactic, but is 
       reflexivity
     end
 
-As with ``have``, you can make the type explicit by writing ``let a : ℕ := 3 * 2``. The difference between ``let`` and ``have`` is that ``let`` introduces a local definition in the context, so that the definition of the local constant can be unfolded in the proof.
+As with ``have``, you can make the type implicit by writing ``let a := 3 * 2``. The difference between ``let`` and ``have`` is that ``let`` introduces a local definition in the context, so that the definition of the local constant can be unfolded in the proof.
 
 For even more structured proofs, you can nest ``begin...end`` blocks within other ``begin...end`` blocks. In a nested block, Lean focuses on the first goal, and generates an error if it has not been fully solved at the end of the block. This can be helpful in indicating the separate proofs of multiple subgoals introduced by a tactic.
 
@@ -950,7 +950,7 @@ In the first example, the left branch succeeds, whereas in the second one, it is
 
 The tactic tries to solve the left disjunct immediately by assumption; if that fails, it tries to focus on the right disjunct; and if that doesn't work, it invokes the assumption tactic.
 
-Incidentally, a tactic expressions is really formal terms in Lean, of type ``tactic α`` for some ``α``. Tactics can be defined and then applied later on.
+Incidentally, a tactic expression is really a formal term in Lean, of type ``tactic α`` for some ``α``. Tactics can be defined and then applied later on.
 
 .. code-block:: lean
 
@@ -966,7 +966,7 @@ Incidentally, a tactic expressions is really formal terms in Lean, of type ``tac
     example (p q r : Prop) (hr : r) : p ∨ q ∨ r :=
     by my_tac
 
-With a ``begin...end`` block or after a ``by``, Lean's parser uses special mechanisms to parse these expressions, but they are similar to ordinary expressions in Lean like ``x + 2`` and ``list α``. (The annotation ```[...]`` in the definition of ``my_tac`` above invokes the special parsing mechanism here, too.) The book `Programming in Lean <https://leanprover.github.io/programming_in_lean/>`__ provides a fuller introduction to writing tactics and installing them for interactive use. The tactic combinators were discussing here serve as casual entry points to the tactic programming language.
+With a ``begin...end`` block or after a ``by``, Lean's parser uses special mechanisms to parse these expressions, but they are similar to ordinary expressions in Lean like ``x + 2`` and ``list α``. (The annotation ```[...]`` in the definition of ``my_tac`` above invokes the special parsing mechanism here, too.) The book `Programming in Lean <https://leanprover.github.io/programming_in_lean/>`__ provides a fuller introduction to writing tactics and installing them for interactive use. The tactic combinators we're discussing here serve as casual entry points to the tactic programming language.
 
 You will have no doubt noticed by now that tactics can fail. Indeed, it is the "failure" state that causes the *orelse* combinator to backtrack and try the next tactic. The ``try`` combinator builds a tactic that always succeeds, though possibly in a trivial way: ``try t`` executes ``t`` and reports success, even if ``t`` fails. It is equivalent to ``t <|> skip``, where ``skip`` is a tactic that does nothing (and succeeds in doing so). In the next example, the second ``split`` succeeds on the right conjunct ``q ∧ r`` (remember that disjunction and conjunction associate to the right) but fails on the first. The ``try`` tactic ensures that the sequential composition succeeds.
 
@@ -1561,5 +1561,5 @@ Exercises
    .. code-block:: lean
 
        example (p q r : Prop) (hp : p) : 
-       (p ∨ q ∨ r) ∧ (q ∨ p ∨ r) ∧ (q ∨ p ∨ r) :=
+       (p ∨ q ∨ r) ∧ (q ∨ p ∨ r) ∧ (q ∨ r ∨ p) :=
        by admit
