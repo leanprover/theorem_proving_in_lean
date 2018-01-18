@@ -202,7 +202,7 @@ In addition to ``apply`` and ``exact``, another useful tactic is ``intro``, whic
         intro hr,
         apply or.inr,
         apply and.intro,
-        exact and.left h,
+          exact and.left h,
         exact hr,
       intro h,
       apply or.elim h,
@@ -345,7 +345,19 @@ The ``repeat`` combinator can be used to simplify the last two lines:
 
 The curly braces introduce a new tactic block; they are equivalent to using a nested ``begin ... end`` pair, as discussed in the next section.
 
-There is a variant of ``apply`` called ``fapply`` that is more aggressive in creating new subgoals for arguments. Here is an example of how it is used:
+If some of the goals that are needed to complete the result of an ``apply`` depend on others, the ``apply`` tactic places those subgoals last, in the hopes that they will be solved implicitly by the solutions to the previous subgoals. For example, consider the following proof:
+
+.. code-block:: lean
+
+    example : ∃ a : ℕ, 5 = a :=
+    begin
+      apply exists.intro,
+      reflexivity
+    end
+
+The first ``apply`` requires us to construct two values, namely, a value of ``a`` and a proof that ``5 = a``. But the ``apply`` tactic takes the second goal to be the more important one, and places it first. Solving it with reflexivity forces ``a`` to be instantiated to ``5``, at which point, the second goal is solved automatically. 
+
+Sometimes, however, we want to synthesize the necessary arguments in the order that they appear. For that purpose there is a variant of ``apply`` called ``fapply``:
 
 .. code-block:: lean
 
@@ -353,10 +365,10 @@ There is a variant of ``apply`` called ``fapply`` that is more aggressive in cre
     begin
       fapply exists.intro,
       exact 0,
-      apply rfl
+      reflexivity
     end
 
-Here, the command ``fapply exists.intro`` creates two goals. The first is to provide a natural number, ``a``, and the second is to prove that ``a = a``. Notice that the second goal depends on the first; solving the first goal instantiates a metavariable in the second.
+Here, the command ``fapply exists.intro`` leaves two goals. The first requires us to provide a natural number, ``a``, and the second requires us to prove that ``a = a``. The second goal depends on the first, so solving the first goal instantiates a metavariable in the second goal, which we then prove with ``reflexivity``.
 
 Another tactic that is sometimes useful is the ``revert`` tactic, which is, in a sense, an inverse to ``intro``.
 
@@ -777,7 +789,7 @@ Lean also has a ``let`` tactic, which is similar to the ``have`` tactic, but is 
       reflexivity
     end
 
-As with ``have``, you can make the type implicit by writing ``let a := 3 * 2``. The difference between ``let`` and ``have`` is that ``let`` introduces a local definition in the context, so that the definition of the local constant can be unfolded in the proof.
+As with ``have``, you can leave the type implicit by writing ``let a : ℕ := 3 * 2``. The difference between ``let`` and ``have`` is that ``let`` introduces a local definition in the context, so that the definition of the local constant can be unfolded in the proof.
 
 For even more structured proofs, you can nest ``begin...end`` blocks within other ``begin...end`` blocks. In a nested block, Lean focuses on the first goal, and generates an error if it has not been fully solved at the end of the block. This can be helpful in indicating the separate proofs of multiple subgoals introduced by a tactic.
 
@@ -966,7 +978,7 @@ Incidentally, a tactic expression is really a formal term in Lean, of type ``tac
     example (p q r : Prop) (hr : r) : p ∨ q ∨ r :=
     by my_tac
 
-With a ``begin...end`` block or after a ``by``, Lean's parser uses special mechanisms to parse these expressions, but they are similar to ordinary expressions in Lean like ``x + 2`` and ``list α``. (The annotation ```[...]`` in the definition of ``my_tac`` above invokes the special parsing mechanism here, too.) The book `Programming in Lean <https://leanprover.github.io/programming_in_lean/>`__ provides a fuller introduction to writing tactics and installing them for interactive use. The tactic combinators we're discussing here serve as casual entry points to the tactic programming language.
+With a ``begin...end`` block or after a ``by``, Lean's parser uses special mechanisms to parse these expressions, but they are similar to ordinary expressions in Lean like ``x + 2`` and ``list α``. (The annotation ``[...]`` in the definition of ``my_tac`` above invokes the special parsing mechanism here, too.) The book `Programming in Lean <https://leanprover.github.io/programming_in_lean/>`__ provides a fuller introduction to writing tactics and installing them for interactive use. The tactic combinators we are discussing here serve as casual entry points to the tactic programming language.
 
 You will have no doubt noticed by now that tactics can fail. Indeed, it is the "failure" state that causes the *orelse* combinator to backtrack and try the next tactic. The ``try`` combinator builds a tactic that always succeeds, though possibly in a trivial way: ``try t`` executes ``t`` and reports success, even if ``t`` fails. It is equivalent to ``t <|> skip``, where ``skip`` is a tactic that does nothing (and succeeds in doing so). In the next example, the second ``split`` succeeds on the right conjunct ``q ∧ r`` (remember that disjunction and conjunction associate to the right) but fails on the first. The ``try`` tactic ensures that the sequential composition succeeds.
 

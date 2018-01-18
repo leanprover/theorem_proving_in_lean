@@ -223,7 +223,7 @@ We can prevent the shorter alias from being created by using the ``protected`` k
     -- #check bar -- error
     #check foo.bar
 
-This is often used for names like ``nat.rec_on`` and ``nat.induction_on``, to prevent overloading of common names.
+This is often used for names like ``nat.rec`` and ``nat.rec_on``, to prevent overloading of common names.
 
 The ``open`` command admits variations. The command
 
@@ -604,7 +604,7 @@ There are a number of ways in which you can query Lean for information about its
     #check foo
     #check @foo
     #reduce foo
-    #reduce (foo @nat.zero)
+    #reduce (foo nat.zero)
     #print foo
 
 There are other useful ``#print`` commands:
