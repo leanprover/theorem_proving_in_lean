@@ -435,7 +435,7 @@ As with function definitions, Lean's inductive definition syntax will let you pu
 
 The results of these definitions are essentially the same as the ones given earlier in this section. Note that in the definition of ``sum``, the annotation ``{}`` refers to the parameters, ``α`` and ``β``. As with function definitions, you can use curly braces to specify which arguments are meant to be left implicit.
 
-A type, like ``prod``, that has only one constructor is purely conjunctive: the constructor simply packs the list of arguments into a single piece of data, essentially a tuple where the type of subsequent arguments can depend on the type of the initial argument. We can also think of such a type as a "record" or a "structure". In Lean, the keyword ``structure`` can be used to define such an inductive type as well as its projections, at the same time.
+A type, like ``prod``, that has only one constructor is purely conjunctive: the constructor simply packs the list of arguments into a single piece of data, essentially a tuple where the type of subsequent arguments can depend on the type of the initial argument. We can also think of such a type as a "record" or a "structure". In Lean, the keyword ``structure`` can be used to define such an inductive type, as well as its projections, at the same time.
 
 .. code-block:: lean
 
@@ -604,7 +604,7 @@ The notation ``{x : α // p x}`` is syntactic sugar for ``subtype (λ x : α, p 
 Defining the Natural Numbers
 ----------------------------
 
-The inductively defined types we have seen so far are "flat": constructors wrap data and insert it into a type, and the corresponding recursor unpacks the data and acts on it. Things get much more interesting when the constructors act on elements of the very type being defined. A canonical example is the type ``nat`` of natural numbers:
+The inductively defined types we have seen so far are "flat": constructors wrap data and insert them into a type, and the corresponding recursor unpacks the data and acts on them. Things get much more interesting when the constructors act on elements of the very type being defined. A canonical example is the type ``nat`` of natural numbers:
 
 .. code-block:: lean
 
