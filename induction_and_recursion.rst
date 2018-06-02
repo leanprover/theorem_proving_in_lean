@@ -3,7 +3,7 @@
 Induction and Recursion
 =======================
 
-In the previous chapter, we saw that inductively definitions provide a powerful means of introducing new types in Lean. Moreover, the constructors and the recursors provide the only means of defining functions on these types. By the propositions-as-types correspondence, this means that induction is the fundamental method of proof.
+In the previous chapter, we saw that inductive definitions provide a powerful means of introducing new types in Lean. Moreover, the constructors and the recursors provide the only means of defining functions on these types. By the propositions-as-types correspondence, this means that induction is the fundamental method of proof.
 
 Lean provides natural ways of defining recursive functions, performing pattern matching, and writing inductive proofs. It allows you to define a function by specifying equations that it should satisfy, and it allows you to prove a theorem by specifying how to handle various cases that can arise. Behind the scenes, these descriptions are "compiled" down to primitive recursors, using a procedure that we refer to as the "equation compiler." The equation compiler is not part of the trusted code base; its output consists of terms that are checked independently by the kernel.
 
@@ -159,7 +159,7 @@ Here are some more examples of nested pattern matching:
     | (m+1, 0)   := 1
     | (m+1, n+1) := 2
 
-The equation compiler can process multiple arguments sequentially. For example, it would more natural to define the previous example as a function of two arguments:
+The equation compiler can process multiple arguments sequentially. For example, it would be more natural to define the previous example as a function of two arguments:
 
 .. code-block:: lean
 
@@ -1178,7 +1178,7 @@ Exercises
       -- #eval aeval sample_val sample_aexpr
       -- END
 
-   Implement "constant fusion," a procedure that simplifies subterms like ``4 + 7`` to ``12``. Using the auxiliary function ``simp_const``, define a function "fuse": to simplify a plus or a times, first simplify the arguments recursively, and then apply ``simp_const`` to try to simplify the result.
+   Implement "constant fusion," a procedure that simplifies subterms like ``5 + 7`` to ``12``. Using the auxiliary function ``simp_const``, define a function "fuse": to simplify a plus or a times, first simplify the arguments recursively, and then apply ``simp_const`` to try to simplify the result.
 
    .. code-block:: lean
 
