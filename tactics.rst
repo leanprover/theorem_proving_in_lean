@@ -444,10 +444,10 @@ The mnemonic in the notation above is that you are generalizing the goal by sett
     begin
       generalize : 3 = x,
       -- goal is x : ℕ ⊢ 2 + x = 5,
-      admit
+      sorry
     end
 
-In this example, ``admit`` is nothing more than the tactic version of ``sorry``. It closes the current goal, producing the usual warning that ``sorry`` has been used. To preserve the validity of the previous goal, the ``generalize`` tactic allows us to record the fact that ``3`` has been replaced by ``x``. All we need to do is to provide a label, and ``generalize`` uses it to store the assignment in the local context:
+In this example, the ``sorry`` tactic is the analogue of the ``sorry`` proof term. It closes the current goal, producing the usual warning that ``sorry`` has been used. To preserve the validity of the previous goal, the ``generalize`` tactic allows us to record the fact that ``3`` has been replaced by ``x``. All we need to do is to provide a label, and ``generalize`` uses it to store the assignment in the local context:
 
 .. code-block:: lean
 
@@ -1211,6 +1211,8 @@ Moreover, you can use a "wildcard" asterisk to simplify all the hypotheses and t
 
     variables (w x y z : ℕ) (p : ℕ → Prop)
 
+    local attribute [simp] mul_comm mul_assoc mul_left_comm
+
     example (h : p (x * y + z * w  * x)) : p (x * w * z + y * x) :=
     by { simp at *, assumption }
 
@@ -1218,11 +1220,13 @@ Moreover, you can use a "wildcard" asterisk to simplify all the hypotheses and t
       p (y + 0 + x) ∧ p (z * x) :=
     by { simp at *, split; assumption }
 
-For operations that are commutative and associative, like addition on the natural numbers, the simplifier uses these two facts to rewrite an expression, as well as *left commutativity*. In the case of addition the latter is expressed as follows: ``x + (y + z) = y + (x + z)``. It may seem that commutativity and left-commutativity are problematic, in that repeated application of either causes looping. But the simplifier detects identities that permute their arguments, and uses a technique known as *ordered rewriting*. This means that that the system maintains an internal ordering of terms, and only applies the identity if doing so decreases the order. With the three identities mentioned above, this has the effect that all the parentheses in an expression are associated to the right, and the expressions are ordered in a canonical (though somewhat arbitrary) way. Two expressions that are equivalent up to associativity and commutativity are then rewritten to the same canonical form.
+For operations that are commutative and associative, like multiplication on the natural numbers, the simplifier uses these two facts to rewrite an expression, as well as *left commutativity*. In the case of multiplication the latter is expressed as follows: ``x * (y * z) = y * (x * z)``. The ``local attribute`` command tells the simplifier to use these rules in the current file (or section or namespace, as the case may be). It may seem that commutativity and left-commutativity are problematic, in that repeated application of either causes looping. But the simplifier detects identities that permute their arguments, and uses a technique known as *ordered rewriting*. This means that that the system maintains an internal ordering of terms, and only applies the identity if doing so decreases the order. With the three identities mentioned above, this has the effect that all the parentheses in an expression are associated to the right, and the expressions are ordered in a canonical (though somewhat arbitrary) way. Two expressions that are equivalent up to associativity and commutativity are then rewritten to the same canonical form.
 
 .. code-block:: lean
 
     variables (x y z w : ℕ) (p : ℕ → Prop)
+
+    local attribute [simp] mul_comm mul_assoc mul_left_comm
 
     example : x * y + z * w  * x = x * w * z + y * x :=
     by simp
@@ -1236,13 +1240,15 @@ As with the rewriter, the simplifier behaves appropriately in algebraic structur
 
     variables {α : Type} [comm_ring α]
 
+    local attribute [simp] mul_comm mul_assoc mul_left_comm
+
     example (x y z : α) : (x - x) * y + z = z :=
     begin simp end
 
     example (x y z w : α) : x * y + z * w  * x = x * w * z + y * x :=
     by simp
 
-As with ``rewrite``, you can send ``simp`` a list of facts to use, including general lemmas, local hypotheses, definitions to unfold, and compound expressions. The ``simp`` tactic does not recognize the ``-t`` syntax, so to use an identity in the other direction you need to use ``eq.symm`` explicitly. In any case, the additional rules are added to the collection of identities that are used to simplify a term.
+As with ``rewrite``, you can send ``simp`` a list of facts to use, including general lemmas, local hypotheses, definitions to unfold, and compound expressions. The ``simp`` tactic does not recognize the ``←t`` syntax that ``rewrite`` does, so to use an identity in the other direction you need to use ``eq.symm`` explicitly. In any case, the additional rules are added to the collection of identities that are used to simplify a term.
 
 .. code-block:: lean
 
@@ -1574,4 +1580,4 @@ Exercises
 
        example (p q r : Prop) (hp : p) : 
        (p ∨ q ∨ r) ∧ (q ∨ p ∨ r) ∧ (q ∨ r ∨ p) :=
-       by admit
+       by sorry

@@ -54,7 +54,7 @@ Lean provides various sectioning mechanisms to help structure a theory. We saw i
       #check t1 (2 * x)
 
       theorem t2 : double (x * y) = double x * y := 
-      by simp [double, mul_add]
+      by simp [double, add_mul]
     end
 
 The definition of ``double`` does not have to declare ``x`` as an argument; Lean detects the dependence and inserts it automatically. Similarly, Lean detects the occurrence of ``x`` in ``t1`` and ``t2``, and inserts it automatically there, too.
@@ -380,7 +380,7 @@ To illustrate the difference, consider the following example, which shows that a
 
 .. code-block:: lean
 
-    namespace hide
+    namespace hidden
     -- BEGIN
     variables {α : Type} (r : α → α → Prop)
 
@@ -414,13 +414,13 @@ To illustrate the difference, consider the following example, which shows that a
       transitive r :=
     @th2 _ _ (@th1 _ _ reflr @euclr) @euclr
     -- END
-    end hide
+    end hidden
 
 The results are broken down into small steps: ``th1`` shows that a relation that is reflexive and euclidean is symmetric, and ``th2`` shows that a relation that is symmetric and euclidean is transitive. Then ``th3`` combines the two results. But notice that we have to manually disable the implicit arguments in ``th1``, ``th2``, and ``euclr``, because otherwise too many implicit arguments are inserted. The problem goes away if we use weak implicit arguments:
 
 .. code-block:: lean
 
-    namespace hide
+    namespace hidden
     -- BEGIN
     variables {α : Type} (r : α → α → Prop)
 
@@ -447,7 +447,7 @@ The results are broken down into small steps: ``th1`` shows that a relation that
       transitive r :=
     th2 (th1 reflr euclr) euclr
     -- END
-    end hide
+    end hidden
 
 There is a third kind of implicit argument that is denoted with square brackets, ``[`` and ``]``. These are used for type classes, as explained in :numref:`Chapter %s <type_classes>`.
 

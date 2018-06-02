@@ -14,7 +14,7 @@ For example, we could introduce a new type, ``Prop``, to represent propositions,
 
 .. code-block:: lean
 
-    namespace hide
+    namespace hidden
 
     -- BEGIN
     constant and : Prop → Prop → Prop
@@ -28,13 +28,13 @@ For example, we could introduce a new type, ``Prop``, to represent propositions,
     #check implies (and p q) (and q p)  -- Prop
     -- END
 
-    end hide
+    end hidden
 
 We could then introduce, for each element ``p : Prop``, another type ``Proof p``, for the type of proofs of ``p``. An "axiom" would be a constant of such a type.
 
 .. code-block:: lean
 
-    namespace hide
+    namespace hidden
 
     constant and : Prop → Prop → Prop
     constant or : Prop → Prop → Prop
@@ -51,7 +51,7 @@ We could then introduce, for each element ``p : Prop``, another type ``Proof p``
     #check and_comm p q      -- Proof (implies (and p q) (and q p))
     -- END
 
-    end hide
+    end hidden
 
 In addition to axioms, however, we would also need rules to build new proofs from old ones. For example, in many proof systems for propositional logic, we have the rule of modus ponens:
 
@@ -61,7 +61,7 @@ We could represent this as follows:
 
 .. code-block:: lean
 
-    namespace hide
+    namespace hidden
 
     constant implies : Prop → Prop → Prop
     constant Proof : Prop → Type
@@ -71,7 +71,7 @@ We could represent this as follows:
       Π p q : Prop, Proof (implies p q) →  Proof p → Proof q
     -- END
 
-    end hide
+    end hidden
 
 Systems of natural deduction for propositional logic also typically rely on the following rule:
 
@@ -81,7 +81,7 @@ We could render this as follows:
 
 .. code-block:: lean
 
-    namespace hide
+    namespace hidden
 
     constant implies : Prop → Prop → Prop
     constant Proof : Prop → Type
@@ -91,7 +91,7 @@ We could render this as follows:
       Π p q : Prop, (Proof p → Proof q) → Proof (implies p q).
     -- END
 
-    end hide
+    end hidden
 
 This approach would provide us with a reasonable way of building assertions and proofs. Determining that an expression ``t`` is a correct proof of assertion ``p`` would then simply be a matter of checking that ``t`` has type ``Proof p``.
 
@@ -274,6 +274,8 @@ As a theorem of propositional logic, what does ``t2`` say?
 
 Note that it is often useful to use numeric unicode subscripts, entered as ``\0``, ``\1``, ``\2``, ..., for hypotheses, as we did in this example.
 
+.. _propositional_logic:
+
 Propositional Logic
 -------------------
 
@@ -310,6 +312,8 @@ They all take values in ``Prop``.
 The order of operations is as follows: unary negation ``¬`` binds most strongly, then ``∧``, then ``∨``, then ``→``, and finally ``↔``. For example, ``a ∧ b → c ∨ d ∧ e`` means ``(a ∧ b) → (c ∨ (d ∧ e))``. Remember that ``→`` associates to the right (nothing changes now that the arguments are elements of ``Prop``, instead of some other ``Type``), as do the other binary connectives. So if we have ``p q r : Prop``, the expression ``p → q → r`` reads "if ``p``, then if ``q``, then ``r``." This is just the "curried" form of ``p ∧ q → r``.
 
 In the last chapter we observed that lambda abstraction can be viewed as an "introduction rule" for ``→``. In the current setting, it shows how to "introduce" or establish an implication. Application can be viewed as an "elimination rule," showing how to "eliminate" or use an implication in a proof. The other propositional connectives are defined in Lean's library in the file ``init.core`` (see :numref:`importing_files` for more information on the library hierarchy), and each connective comes with its canonical introduction and elimination rules.
+
+.. _conjunction:
 
 Conjunction
 ~~~~~~~~~~~
