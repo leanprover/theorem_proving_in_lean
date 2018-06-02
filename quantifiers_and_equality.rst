@@ -152,20 +152,6 @@ Thus, for example, we can specialize the example from the previous section to th
     example : a = d :=
     eq.trans (eq.trans hab (eq.symm hcb)) hcd
 
-If we "open" the ``eq`` namespace, the names become shorter:
-
-.. code-block:: lean
-
-    universe u
-    variables (α : Type u) (a b c d : α)
-    variables (hab : a = b) (hcb : c = b) (hcd : c = d)
-
-    -- BEGIN
-    open eq
-
-    example : a = d := trans (trans hab (symm hcb)) hcd
-    -- END
-
 We can also use the projection notation:
 
 .. code-block:: lean
@@ -278,7 +264,7 @@ Here is an example of a calculation in the natural numbers that uses substitutio
 
 Notice that the second implicit parameter to ``eq.subst``, which provides the context in which the substitution is to occur, has type ``α → Prop``. Inferring this predicate therefore requires an instance of *higher-order unification*. In full generally, the problem of determining whether a higher-order unifier exists is undecidable, and Lean can at best provide imperfect and approximate solutions to the problem. As a result, ``eq.subst`` doesn't always do what you want it to. This issue is discussed in greater detail in :numref:`elaboration_hints`.
 
-Because equational reasoning is so common and important, Lean provides a number of mechanisms to carry it out more effectively. The next section offers syntax that allow you to write calculational proofs in a more natural and perspicuous way. But, more importantly, equational reasoning is supported by a term rewriter, a simplifier, and other kinds of automation. The term rewriter and simplifier are described briefly in the next setion, and then in greater detail in the next chapter.
+Because equational reasoning is so common and important, Lean provides a number of mechanisms to carry it out more effectively. The next section offers syntax that allow you to write calculational proofs in a more natural and perspicuous way. But, more importantly, equational reasoning is supported by a term rewriter, a simplifier, and other kinds of automation. The term rewriter and simplifier are described briefly in the next section, and then in greater detail in the next chapter.
 
 .. _calculational_proofs:
 
@@ -831,7 +817,7 @@ Exercises
 
    .. code-block:: lean
 
-       namespace hide
+       namespace hidden
 
        def divides (m n : ℕ) : Prop := ∃ k, m * k = n
 
@@ -847,13 +833,13 @@ Exercises
          #check even (m^n +3)
        end
 
-       end hide
+       end hidden
 
    Remember that, without any parameters, an expression of type ``Prop`` is just an assertion. Fill in the definitions of ``prime`` and ``Fermat_prime`` below, and construct the given assertion. For example, you can say that there are infinitely many primes by asserting that for every natural number ``n``, there is a prime number greater than ``n``. Goldbach's weak conjecture states that every odd number greater than 5 is the sum of three primes. Look up the definition of a Fermat prime or any of the other statements, if necessary.
 
    .. code-block:: lean
 
-       namespace hide
+       namespace hidden
 
        def divides (m n : ℕ) : Prop := ∃ k, m * k = n
 
@@ -877,7 +863,7 @@ Exercises
        def Fermat's_last_theorem : Prop := sorry
        -- END
 
-       end hide
+       end hidden
 
 #. Prove as many of the identities listed in :numref:`the_existential_quantifier` as you can.
 
