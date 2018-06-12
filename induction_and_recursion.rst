@@ -86,7 +86,7 @@ Pattern matching works with any inductive type, such as products and option type
     | (some n) := n + 1
     | none     := 0
 
-Here we use it not only to define a function, but also carry out a proof by cases:
+Here we use it not only to define a function, but also to carry out a proof by cases:
 
 .. code-block:: lean
 
