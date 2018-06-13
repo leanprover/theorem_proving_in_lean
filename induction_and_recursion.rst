@@ -347,7 +347,7 @@ Generally speaking, the equation compiler processes input of the following form:
     ...
     | [patternsₙ] := tₙ 
 
-Here ``(a : α)`` is a sequence of parameters, ``(b : β)`` is the sequence of arguments on which pattern matching takes place, and ``γ`` is any type, which can depend on ``a`` and ``b``. Each line should contain the same number of patterns, one for each element of ``b``. As we have seen, a pattern is either a variable, a constructor applied to other patterns, or an expression that normalizes to something of that form (where the non-constructors are marked with the ``[pattern]`` attribute). The appearance of constructors prompt case splits, with the arguments to the constructors represented by the given variables. In :numref:`dependent_pattern_matching`, we will see that it is sometimes necessary to include explicit terms in patterns that are needed to make an expression type check, though they do not play a role in pattern matching. These are called "inaccessible terms," for that reason. But we will not need to use such inaccessible terms before :numref:`dependent_pattern_matching`.
+Here ``(a : α)`` is a sequence of parameters, ``(b : β)`` is the sequence of arguments on which pattern matching takes place, and ``γ`` is any type, which can depend on ``a`` and ``b``. Each line should contain the same number of patterns, one for each element of β. As we have seen, a pattern is either a variable, a constructor applied to other patterns, or an expression that normalizes to something of that form (where the non-constructors are marked with the ``[pattern]`` attribute). The appearances of constructors prompt case splits, with the arguments to the constructors represented by the given variables. In :numref:`dependent_pattern_matching`, we will see that it is sometimes necessary to include explicit terms in patterns that are needed to make an expression type check, though they do not play a role in pattern matching. These are called "inaccessible terms," for that reason. But we will not need to use such inaccessible terms before :numref:`dependent_pattern_matching`.
 
 As we saw in the last section, the terms ``t₁, ..., tₙ`` can make use of any of the parameters ``a``, as well as any of the variables that are introduced in the corresponding patterns. What makes recursion and induction possible is that they can also involve recursive calls to ``foo``. In this section, we will deal with *structural recursion*, in which the arguments to ``foo`` occurring on the right-hand side of the ``:=`` are subterms of the patterns on the left-hand side. The idea is that they are structurally smaller, and hence appear in the inductive type at an earlier stage. Here are some examples of structural recursion from the last chapter, now defined using the equation compiler:
 
@@ -540,7 +540,7 @@ Well-Founded Recursion and Induction
 
 Dependent type theory is powerful enough to encode and justify well-founded recursion. Let us start with the logical background that is needed to understand how it works.
 
-Lean's standard library defines two predicates, ``acc r a`` and ``well_founded r``, where ``r`` is a binary relation on a type ``α`` and an element ``x`` of ``α``.
+Lean's standard library defines two predicates, ``acc r a`` and ``well_founded r``, where ``r`` is a binary relation on a type ``α``, and ``a`` is an element of type ``α``.
 
 .. code-block:: lean
 
