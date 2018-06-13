@@ -572,7 +572,9 @@ There is a long cast of characters here, but the first block we have already see
 
 Note that ``well_founded.fix`` works equally well as an induction principle. It says that if ``≺`` is well founded and you want to prove ``∀ x, C x``, it suffices to show that for an arbitrary ``x``, if we have ``∀ y ≺ x, C y``, then we have ``C x``.
 
-Lean knows that the usual order ``<`` on the natural numbers is well founded. It also knows a number of ways of constructing new well founded orders from others, for example, using lexicographic order. For example, here is essentially the definition of division on the natural numbers that is found in the standard library.
+Lean knows that the usual order ``<`` on the natural numbers is well founded. It also knows a number of ways of constructing new well founded orders from others, for example, using lexicographic order. 
+
+Here is essentially the definition of division on the natural numbers that is found in the standard library.
 
 .. code-block:: lean
 
@@ -619,7 +621,7 @@ The equation compiler is designed to make definitions like this more convenient.
 
 When the equation compiler encounters a recursive definition, it first tries structural recursion, and only when that fails, does it fall back on well-founded recursion. In this case, detecting the possibility of well-founded recursion on the natural numbers, it uses the usual lexicographic ordering on the pair ``(x, y)``. The equation compiler in and of itself is not clever enough to derive that ``x - y`` is less than ``x`` under the given hypotheses, but we can help it out by putting this fact in the local context. The equation compiler looks in the local context for such information, and, when it finds it, puts it to good use. 
 
-The defining equation for ``div`` does *not* hold definitionally, but the equation is available to ``rewrite`` and ``simp``. The simplifier will loop if you apply it blindly, by ``rewrite`` will do the trick.
+The defining equation for ``div`` does *not* hold definitionally, but the equation is available to ``rewrite`` and ``simp``. The simplifier will loop if you apply it blindly, but ``rewrite`` will do the trick.
 
 .. code-block:: lean
 
@@ -639,10 +641,6 @@ The defining equation for ``div`` does *not* hold definitionally, but the equati
     example (x y : ℕ) :  
       div x y = if 0 < y ∧ y ≤ x then div (x - y) y + 1 else 0 :=
     by rw [div]
-
-    example (x y : ℕ) (h : 0 < y ∧ y ≤ x) : 
-      div x y = div (x - y) y + 1 :=
-    by rw [div, if_pos h]
 
     example (x y : ℕ) (h : 0 < y ∧ y ≤ x) : 
       div x y = div (x - y) y + 1 :=
