@@ -749,7 +749,7 @@ Then, given a type ``α``, some elements of ``α``, and some lists of elements o
 
     variable  α : Type
     variable  a : α
-    variables l1 l2 : list α
+    variables l1 l2 : hidden.list α
 
     #check cons α a (nil α)
     #check append α (cons α a (nil α)) l1
