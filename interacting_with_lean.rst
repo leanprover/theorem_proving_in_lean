@@ -501,6 +501,7 @@ The possibility of declaring parameters in a section also makes it possible to d
 
 .. code-block:: lean
 
+    -- BEGIN
     namespace int
 
     def dvd (m n : ℤ) : Prop := ∃ k, n = m * k
@@ -516,8 +517,7 @@ The possibility of declaring parameters in a section also makes it possible to d
     end int
 
     open int
-
-    -- BEGIN
+    
     section mod_m
       parameter (m : ℤ)
       variables (a b c : ℤ)
