@@ -203,7 +203,7 @@ The class ``has_add α`` is supposed to be inhabited exactly when there is an ap
     instance bool_has_add : has_add bool :=
     ⟨bor⟩
 
-    #check 2 + 2    -- nat
+    #check (2:nat) + 2   -- nat
     #check tt + ff  -- bool
     -- END
     end hidden
@@ -220,8 +220,8 @@ As with ``inhabited``, the power of type class inference stems not only from the
       has_add (α × β) :=
     ⟨λ ⟨a₁, b₁⟩ ⟨a₂, b₂⟩, ⟨a₁+a₂, b₁+b₂⟩⟩
 
-    #check (1, 2) + (3, 4)    -- ℕ × ℕ
-    #reduce  (1, 2) + (3, 4)  -- (4, 6)
+    #check ((1:nat), (2:nat)) + (3, 4)  -- ℕ × ℕ
+    #reduce ((1:nat), (2:nat)) + (3, 4) -- (4, 6)
     -- END
     end hidden
 
