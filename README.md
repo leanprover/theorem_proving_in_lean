@@ -18,6 +18,7 @@ The call to `make install-deps` is only required the first time, and only if you
 # How to test the Lean code snippets
 
 ```
+leanproject new
 make leantest
 ```
 
