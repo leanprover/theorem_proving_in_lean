@@ -850,11 +850,11 @@ Exercises
        def even (n : ℕ) : Prop := 2 ∣ n -- You can enter the '∣' character by typing \mid
 
        section
-         variables m n : ℕ
+       variables m n : ℕ
 
-         #check m ∣ n
-         #check m^n
-         #check even (m^n +3)
+       #check m ∣ n
+       #check m^n
+       #check even (m^n +3)
        end
 
        end hidden
