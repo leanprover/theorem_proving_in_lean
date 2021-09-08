@@ -842,6 +842,7 @@ Exercises
    .. code-block:: lean
 
        import data.nat.basic
+       import algebra.group_power
 
        #check even
 
