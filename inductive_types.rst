@@ -1016,7 +1016,7 @@ Notice that ``cases`` can be used to produce data as well as prove propositions.
     example : f 0 = 3 := rfl
     example : f 5 = 7 := rfl
 
-Once again, cases will revert, split, and then reintroduce depedencies in the context.
+Once again, cases will revert, split, and then reintroduce dependencies in the context.
 
 .. code-block:: lean
 
