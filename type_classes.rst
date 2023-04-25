@@ -103,10 +103,17 @@ This has the effect that given a type expression ``α``, whenever we write ``def
 
 .. code-block:: lean
 
+    namespace hidden
+
+    def default (α : Type*) [s : inhabited α] : α :=
+    @inhabited.default α s
+    -- BEGIN
     #check default Prop  -- Prop
     #check default nat   -- ℕ
     #check default bool  -- bool
     #check default unit  -- unit
+    -- END
+    end hidden
 
 In general, whenever we write ``default α``, we are asking the elaborator to synthesize an element of type ``α``.
 
@@ -114,10 +121,17 @@ Notice that we can "see" the value that is synthesized with ``#reduce``:
 
 .. code-block:: lean
 
+    namespace hidden
+
+    def default (α : Type*) [s : inhabited α] : α :=
+    @inhabited.default α s
+    -- BEGIN
     #reduce default Prop  -- true
     #reduce default nat   -- 0
     #reduce default bool  -- ff
     #reduce default unit  -- ()
+    -- END
+    end hidden
 
 Sometimes we want to think of the default element of a type as being an *arbitrary* element, whose specific value should not play a role in our proofs. For that purpose, we can write ``arbitrary α`` instead of ``default α``. The definition of ``arbitrary`` is the same as that of default, but is marked ``irreducible`` to discourage the elaborator from unfolding it. This does not preclude proofs from making use of the value, however, so the use of ``arbitrary`` rather than ``default`` functions primarily to signal intent.
 
@@ -131,6 +145,9 @@ For example, the following definition shows that if two types ``α`` and ``β`` 
 .. code-block:: lean
 
     namespace hidden
+
+    def default (α : Type*) [s : inhabited α] : α :=
+    @inhabited.default α s
     -- BEGIN
     instance prod_inhabited
         {α β : Type*} [inhabited α] [inhabited β] :
@@ -143,8 +160,15 @@ With this added to the earlier instance declarations, type class instance can in
 
 .. code-block:: lean
 
+    namespace hidden
+
+    def default (α : Type*) [s : inhabited α] : α :=
+    @inhabited.default α s
+    -- BEGIN
     #check default (nat × bool)
     #reduce default (nat × bool)
+    -- END
+    end hidden
 
 Given the expression ``default (nat × bool)``, the elaborator is called on to infer an implicit argument ``?M : inhabited (nat × bool)``. The instance ``prod_inhabited`` reduces this to inferring ``?M1 : inhabited nat`` and ``?M2 : inhabited bool``. The first one is solved by the instance ``nat_inhabited``. The second uses ``bool_inhabited``.
 
@@ -154,6 +178,8 @@ Similarly, we can inhabit function spaces with suitable constant functions:
 
     namespace hidden
 
+    def default (α : Type*) [s : inhabited α] : α :=
+    @inhabited.default α s
     -- BEGIN
     instance inhabited_fun (α : Type*) {β : Type*} [inhabited β] :
       inhabited (α → β) :=
@@ -513,6 +539,8 @@ We can define a coercion from ``list α`` to ``set α`` as follows:
 
 .. code-block:: lean
 
+    import data.set.basic
+
     def list.to_set {α : Type*} : list α → set α
     | []     := ∅
     | (h::t) := {h} ∪ list.to_set t
@@ -529,6 +557,8 @@ We can define a coercion from ``list α`` to ``set α`` as follows:
 Coercions are only considered if the given and expected types do not contain metavariables at elaboration time. In the following example, when we elaborate the union operator, the type of ``[3, 2]`` is ``list ?m``, and a coercion will not be considered since it contains metavariables.
 
 .. code-block:: lean
+
+    import data.set.basic
 
     def list.to_set {α : Type*} : list α → set α
     | []     := ∅
@@ -549,6 +579,8 @@ We can work around this issue by using a type ascription.
 
 .. code-block:: lean
 
+    import data.set.basic
+
     def list.to_set {α : Type*} : list α → set α
     | []     := ∅
     | (h::t) := {h} ∪ list.to_set t
@@ -568,6 +600,8 @@ We can work around this issue by using a type ascription.
 In the examples above, you may have noticed the symbol ``↑`` produced by the ``#check`` commands. It is the lift operator, ``↑t`` is notation for ``coe t``. We can use this operator to force a coercion to be introduced in a particular place. It is also helpful to make our intent clear, and work around limitations of the coercion resolution system.
 
 .. code-block:: lean
+
+    import data.set.basic
 
     def list.to_set {α : Type*} : list α → set α
     | []     := ∅
@@ -677,15 +711,15 @@ If we declare this function to be a coercion, then whenever we have a semigroup 
     ⟨S.mul⟩
 
     -- BEGIN
-    instance Semigroup_to_sort : has_coe_to_sort Semigroup :=
-    {S := Type u, coe := λ S, S.carrier}
+    instance Semigroup_to_sort : has_coe_to_sort Semigroup (Type u) :=
+    { coe := λ S, S.carrier }
 
     example (S : Semigroup) (a b c : S) :
       (a * b) * c = a * (b * c) :=
     Semigroup.mul_assoc _ a b c
     -- END
 
-It is the coercion that makes it possible to write ``(a b c : S)``. Note that, we define an instance of ``has_coe_to_sort Semigroup`` instead of ``has_coe Semigroup Type``. The reason is that when Lean needs a coercion to sort, it only knows it needs a type, but, in general, the universe is not known. The field ``S`` in the class ``has_coe_to_sort`` is used to specify the universe we are coercing too.
+It is the coercion that makes it possible to write ``(a b c : S)``. Note that, we define an instance of ``has_coe_to_sort Semigroup (Type u)`` instead of ``has_coe Semigroup (Type u)``. The reason is that when Lean needs a coercion to sort, it only knows it needs a type, but, in general, the universe is not known. The second argument to ``has_coe_to_sort`` is used to specify the universe we are coercing too.
 
 By the *class of function types*, we mean the collection of Pi types ``Π z : B, C``. The third kind of coercion has the form
 
@@ -708,8 +742,8 @@ where ``F`` is again a family of types and ``B`` and ``C`` can depend on ``x1, .
     ⟨S.mul⟩
 
     -- BEGIN
-    instance Semigroup_to_sort : has_coe_to_sort Semigroup :=
-    {S := _, coe := λ S, S.carrier}
+    instance Semigroup_to_sort : has_coe_to_sort Semigroup (Type u) :=
+    { coe := λ S, S.carrier }
 
     structure morphism (S1 S2 : Semigroup) :=
     (mor : S1 → S2)
@@ -733,8 +767,8 @@ As a result, it is a prime candidate for the third type of coercion.
     ⟨S.mul⟩
 
 
-    instance Semigroup_to_sort : has_coe_to_sort Semigroup :=
-    {S := _, coe := λ S, S.carrier}
+    instance Semigroup_to_sort : has_coe_to_sort Semigroup (Type u) :=
+    { coe := λ S, S.carrier }
 
     structure morphism (S1 S2 : Semigroup) :=
     (mor : S1 → S2)
@@ -742,9 +776,8 @@ As a result, it is a prime candidate for the third type of coercion.
 
     -- BEGIN
     instance morphism_to_fun (S1 S2 : Semigroup) :
-      has_coe_to_fun (morphism S1 S2) :=
-    { F   := λ _, S1 → S2,
-      coe := λ m, m.mor }
+      has_coe_to_fun (morphism S1 S2) (λ _, S1 → S2) :=
+    { coe := λ m, m.mor }
 
     lemma resp_mul {S1 S2 : Semigroup}
         (f : morphism S1 S2) (a b : S1) :
@@ -758,7 +791,7 @@ As a result, it is a prime candidate for the third type of coercion.
                 ... = f a * f a * f a : by rw [resp_mul f]
     -- END
 
-With the coercion in place, we can write ``f (a * a * a)`` instead of ``morphism.mor f (a * a * a)``. When the ``morphism``, ``f``, is used where a function is expected, Lean inserts the coercion. Similar to ``has_coe_to_sort``, we have yet another class ``has_coe_to_fun`` for this class of coercions. The field ``F`` is used to specify the function type we are coercing to. This type may depend on the type we are coercing from.
+With the coercion in place, we can write ``f (a * a * a)`` instead of ``morphism.mor f (a * a * a)``. When the ``morphism``, ``f``, is used where a function is expected, Lean inserts the coercion. Similar to ``has_coe_to_sort``, we have yet another class ``has_coe_to_fun`` for this class of coercions. The second argument ``λ _, S1 → S2`` is used to specify the function type we are coercing to. This type may depend on the type we are coercing from.
 
 Finally, ``⇑f`` and ``↥S`` are notations for ``coe_fn f`` and ``coe_sort S``. They are the coercion operators for the function and sort classes.
 
@@ -776,16 +809,16 @@ We can instruct Lean's pretty-printer to hide the operators ``↑`` and ``⇑`` 
     instance Semigroup_has_mul (S : Semigroup) : has_mul (S.carrier) :=
     ⟨S.mul⟩
 
-    instance Semigroup_to_sort : has_coe_to_sort Semigroup :=
-    {S := _, coe := λ S, S.carrier}
+    instance Semigroup_to_sort : has_coe_to_sort Semigroup (Type u) :=
+    { coe := λ S, S.carrier }
 
     structure morphism (S1 S2 : Semigroup) :=
     (mor : S1 → S2)
     (resp_mul : ∀ a b : S1, mor (a * b) = (mor a) * (mor b))
 
-    instance morphism_to_fun (S1 S2 : Semigroup) : has_coe_to_fun (morphism S1 S2) :=
-    { F   := λ _, S1 → S2,
-      coe := λ m, m.mor }
+    instance morphism_to_fun (S1 S2 : Semigroup) :
+      has_coe_to_fun (morphism S1 S2) (λ _, S1 → S2) :=
+    { coe := λ m, m.mor }
 
     lemma resp_mul {S1 S2 : Semigroup} (f : morphism S1 S2) (a b : S1) : f (a * b) = f a * f b :=
     f.resp_mul a b

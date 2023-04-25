@@ -117,7 +117,7 @@ Suppose that for ``α : Type`` we define the ``set α := α → Prop`` to denote
     variable {α : Type*}
 
     definition mem (x : α) (a : set α) := a x
-    notation e ∈ a := mem e a
+    notation (name := mem) e ∈ a := mem e a
 
     theorem setext {a b : set α} (h : ∀ x, x ∈ a ↔ x ∈ b) : a = b :=
     funext (assume x, propext (h x))
@@ -147,10 +147,10 @@ We can then proceed to define the empty set and set intersection, for example, a
 
     -- BEGIN
     definition empty : set α := λ x, false
-    local notation `∅` := empty
+    local notation (name := empty) `∅` := empty
 
     definition inter (a b : set α) : set α := λ x, x ∈ a ∧ x ∈ b
-    notation a ∩ b := inter a b
+    notation (name := inter) a ∩ b := inter a b
 
     theorem inter_self (a : set α) : a ∩ a = a :=
     setext (assume x, and_self _)
@@ -302,7 +302,7 @@ To support this common use case, the standard library defines the notion of a *s
     (r : α → α → Prop) (iseqv : equivalence r)
 
     namespace setoid
-    infix `≈` := setoid.r
+    infix (name := r) `≈` := setoid.r
 
     variable {α : Type*}
     variable [s : setoid α]
@@ -351,7 +351,7 @@ Recall that in the standard library, ``α × β`` represents the Cartesian produ
     private definition eqv {α : Type*} (p₁ p₂ : α × α) : Prop :=
     (p₁.1 = p₂.1 ∧ p₁.2 = p₂.2) ∨ (p₁.1 = p₂.2 ∧ p₁.2 = p₂.1)
 
-    infix `~` := eqv
+    infix (name := eqv) `~`:50 := eqv
 
 The next step is to prove that ``eqv`` is in fact an equivalence relation, which is to say, it is reflexive, symmetric and transitive. We can prove these three facts in a convenient and readable way by using dependent pattern matching to perform case-analysis and break the hypotheses into pieces that are then reassembled to produce the conclusion.
 
@@ -360,7 +360,7 @@ The next step is to prove that ``eqv`` is in fact an equivalence relation, which
     private definition eqv {α : Type*} (p₁ p₂ : α × α) : Prop :=
     (p₁.1 = p₂.1 ∧ p₁.2 = p₂.2) ∨ (p₁.1 = p₂.2 ∧ p₁.2 = p₂.1)
 
-    local infix `~` := eqv
+    local infix (name := eqv) `~`:50 := eqv
 
     -- BEGIN
     open or
@@ -406,7 +406,7 @@ Now that we have proved that ``eqv`` is an equivalence relation, we can construc
     private definition eqv {α : Type*} (p₁ p₂ : α × α) : Prop :=
     (p₁.1 = p₂.1 ∧ p₁.2 = p₂.2) ∨ (p₁.1 = p₂.2 ∧ p₁.2 = p₂.1)
 
-    local infix `~` := eqv
+    local infix (name := eqv) `~`:50 := eqv
 
     open or
 
@@ -454,7 +454,7 @@ We can easily prove that ``{a₁, a₂} = {a₂, a₁}`` using ``quot.sound``, s
     private definition eqv {α : Type*} (p₁ p₂ : α × α) : Prop :=
     (p₁.1 = p₂.1 ∧ p₁.2 = p₂.2) ∨ (p₁.1 = p₂.2 ∧ p₁.2 = p₂.1)
 
-    local infix `~` := eqv
+    local infix (name := eqv) `~`:50 := eqv
 
     open or
 
@@ -504,7 +504,7 @@ To complete the example, given ``a : α`` and ``u : uprod α``, we define the pr
     private definition eqv {α : Type*} (p₁ p₂ : α × α) : Prop :=
     (p₁.1 = p₂.1 ∧ p₁.2 = p₂.2) ∨ (p₁.1 = p₂.2 ∧ p₁.2 = p₂.1)
 
-    local infix `~` := eqv
+    local infix (name := eqv) `~`:50 := eqv
 
     open or
 
@@ -569,7 +569,7 @@ To complete the example, given ``a : α`` and ``u : uprod α``, we define the pr
     def mem {α : Type*} (a : α) (u : uprod α) : Prop :=
     quot.lift_on u (λ p, mem_fn a p) (λ p₁ p₂ e, mem_respects a e)
 
-    local infix `∈` := mem
+    local infix (name := mem) `∈` := mem
 
     theorem mem_mk_left {α : Type*} (a b : α) : a ∈ {a, b} :=
     inl rfl
