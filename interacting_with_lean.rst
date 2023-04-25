@@ -210,7 +210,7 @@ Although the names of theorems and definitions have to be unique, the aliases th
 
 .. code-block:: lean
 
-    import algebra.ordered_ring
+    import algebra.group.basic
 
     #check add_sub_cancel
     #check nat.add_sub_cancel
@@ -495,7 +495,7 @@ Lean's parser is extensible, which is to say, we can define new notation.
 
     def mul_square (a b : ℕ) := a * a * b * b
 
-    infix `<*>`:50 := mul_square
+    infix (name := mul_square) `<*>`:50 := mul_square
 
     #reduce [2 ** 3]
     #reduce 2 <*> 3
@@ -554,7 +554,7 @@ The possibility of declaring parameters in a section also makes it possible to d
 
     definition mod_equiv := (m ∣ b - a)
 
-    local infix ≡ := mod_equiv
+    local infix ` ≡ `:50 := mod_equiv
 
     theorem mod_refl : a ≡ a :=
     show m ∣ a - a, by simp
@@ -568,7 +568,7 @@ The possibility of declaring parameters in a section also makes it possible to d
     begin
       cases h₁ with d hd, cases h₂ with e he,
       apply dvd_intro (d + e),
-      simp [mul_add, eq.symm hd, eq.symm he, sub_eq_add_neg]
+      simp [mul_add, eq.symm hd, eq.symm he],
     end
     end mod_m
 
@@ -657,7 +657,7 @@ We will discuss inductive types, structures, classes, instances in the next four
 
 .. code-block:: lean
 
-    import algebra.ring
+    import algebra.ring.basic
 
     #print notation
     #print notation + * -
@@ -807,7 +807,7 @@ Sometimes, to disambiguate the name of theorem or better convey the intended ref
 
 .. code-block:: lean
 
-    import algebra.ordered_ring
+    import algebra.order.monoid.lemmas
 
     #check @nat.lt_of_succ_le
     #check @lt_of_not_ge
@@ -818,7 +818,7 @@ Sometimes the word "left" or "right" is helpful to describe variants of a theore
 
 .. code-block:: lean
 
-    import algebra.ordered_ring
+    import algebra.order.monoid.lemmas
 
     #check @add_le_add_left
     #check @add_le_add_right
@@ -827,7 +827,7 @@ We can also use the word "self" to indicate a repeated argument:
 
 .. code-block:: lean
 
-    import algebra.group
+    import algebra.group.basic
 
     #check mul_inv_self
     #check neg_add_self

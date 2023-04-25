@@ -840,7 +840,7 @@ Exercises
 
    .. code-block:: lean
 
-       import data.nat.basic
+       import data.nat.parity
 
        #check even
 
