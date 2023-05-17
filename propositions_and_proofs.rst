@@ -23,9 +23,9 @@ For example, we could introduce a new type, ``Prop``, to represent propositions,
     constant implies : Prop → Prop → Prop
 
     variables p q r : Prop
-    #check and p q                      -- Prop
-    #check or (and p q) r               -- Prop
-    #check implies (and p q) (and q p)  -- Prop
+    #check and p q                            -- Prop
+    #check or (and p q) r                     -- Prop
+    #check not (implies (and p q) (and q p))  -- Prop
     -- END
 
     end hidden
