@@ -11,12 +11,19 @@ leanproject get git@github.com:leanprover/theorem_proving_in_lean.git
 ```
 to clone the repository and install the `mathlib` library. 
 
-The build requires python 3 (install `python3-venv` on ubuntu).
+The build requires python 3, xelatex, latexmk and some OTF fonts.
 
+On Ubuntu, you may install these dependencies by running
+
+```bash
+sudo apt install python3-venv texlive-xetex latexmk fonts-freefont-otf
 ```
+
+```bash
 make install-deps
 make html
 make latexpdf
+PAPER_SIZE=a5paper make latexpdf  # for e-readers
 ```
 
 The call to `make install-deps` is only required the first time, and only if you want to use the bundled version of Sphinx and Pygments with improved syntax highlighting for Lean.
