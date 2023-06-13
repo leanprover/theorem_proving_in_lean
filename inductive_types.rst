@@ -855,12 +855,12 @@ Let us consider some more examples of inductively defined types. For any type, `
 
     variable {α : Type*}
 
-    notation h :: t  := cons h t
+    notation (name := cons) h :: t  := cons h t
 
     def append (s t : list α) : list α :=
     list.rec t (λ x l u, x::u) s
 
-    notation s ++ t := append s t
+    notation (name := append) s ++ t := append s t
 
     theorem nil_append (t : list α) : nil ++ t = t := rfl
 
@@ -886,7 +886,7 @@ Lean allows us to define iterative notation for lists:
 
     namespace list
 
-    notation `[` l:(foldr `,` (h t, cons h t) nil) `]` := l
+    notation (name := list)  `[` l:(foldr `,` (h t, cons h t) nil) `]` := l
 
     section
     open nat
@@ -913,16 +913,16 @@ As an exercise, prove the following:
 
     namespace list
 
-    notation `[` l:(foldr `,` (h t, cons h t) nil) `]` := l
+    notation (name := list)  `[` l:(foldr `,` (h t, cons h t) nil) `]` := l
 
     variable {α : Type*}
 
-    notation h :: t  := cons h t
+    notation (name := cons) h :: t  := cons h t
 
     def append (s t : list α) : list α :=
     list.rec_on s t (λ x l u, x::u)
 
-    notation s ++ t := append s t
+    notation (name := append) s ++ t := append s t
 
     theorem nil_append (t : list α) : nil ++ t = t := rfl
 
@@ -1016,7 +1016,7 @@ Notice that ``cases`` can be used to produce data as well as prove propositions.
     example : f 0 = 3 := rfl
     example : f 5 = 7 := rfl
 
-Once again, cases will revert, split, and then reintroduce depedencies in the context.
+Once again, cases will revert, split, and then reintroduce dependencies in the context.
 
 .. code-block:: lean
 
@@ -1215,7 +1215,7 @@ As with ``cases``, we can use the ``case`` tactic instead to identify one case a
     begin
       induction n,
       case zero : { refl },
-      case succ : n ih { rw [add_succ, ih] }
+      case succ : n ih { rw [add_succ, add_succ, ih] }
     end
 
     theorem add_comm (m n : ℕ) : m + n = n + m :=

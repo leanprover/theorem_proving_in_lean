@@ -570,7 +570,7 @@ This is essentially just alternative notation for the ``match`` construct above.
 
 We will see in :numref:`Chapter %s <induction_and_recursion>` that all these variations are instances of a more general pattern-matching construct.
 
-In the following example, we define ``even a`` as ``∃ b, a = 2*b``, and then we show that the sum of two even numbers is an even number.
+In the following example, we define ``is_even a`` as ``∃ b, a = 2*b``, and then we show that the sum of two even numbers is an even number.
 
 .. code-block:: lean
 
@@ -628,11 +628,10 @@ What follows are some common identities involving the existential quantifier. In
     open classical
 
     variables (α : Type*) (p q : α → Prop)
-    variable a : α
     variable r : Prop
 
     example : (∃ x : α, r) → r := sorry
-    example : r → (∃ x : α, r) := sorry
+    example (a : α) : r → (∃ x : α, r) := sorry
     example : (∃ x, p x ∧ r) ↔ (∃ x, p x) ∧ r := sorry
     example : (∃ x, p x ∨ q x) ↔ (∃ x, p x) ∨ (∃ x, q x) := sorry
 
@@ -642,10 +641,10 @@ What follows are some common identities involving the existential quantifier. In
     example : (¬ ∀ x, p x) ↔ (∃ x, ¬ p x) := sorry
 
     example : (∀ x, p x → r) ↔ (∃ x, p x) → r := sorry
-    example : (∃ x, p x → r) ↔ (∀ x, p x) → r := sorry
-    example : (∃ x, r → p x) ↔ (r → ∃ x, p x) := sorry
+    example (a : α) : (∃ x, p x → r) ↔ (∀ x, p x) → r := sorry
+    example (a : α) : (∃ x, r → p x) ↔ (r → ∃ x, p x) := sorry
 
-Notice that the declaration ``variable a : α`` amounts to the assumption that there is at least one element of type ``α``. This assumption is needed in the second example, as well as in the last two.
+Notice that the second example and the last two examples require the assumption that there is at least one element ``a`` of type ``α``.
 
 Here are solutions to two of the more difficult ones:
 
@@ -841,7 +840,7 @@ Exercises
 
    .. code-block:: lean
 
-       import data.nat.basic
+       import data.nat.parity
 
        #check even
 

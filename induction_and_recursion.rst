@@ -362,7 +362,7 @@ As we saw in the last section, the terms ``t₁, ..., tₙ`` can make use of any
     | m zero     := m
     | m (succ n) := succ (add m n)
 
-    local infix ` + ` := add
+    local infix (name := add) ` + ` := add
 
     theorem add_zero (m : nat) : m + zero = m := rfl
     theorem add_succ (m n : nat) : m + succ n = succ (m + n) := rfl
@@ -397,7 +397,7 @@ The example above shows that the defining equations for ``add`` hold definitiona
     | m zero     := m
     | m (succ n) := succ (add m n)
 
-    local infix ` + ` := add
+    local infix (name := add) ` + ` := add
 
     -- BEGIN
     theorem zero_add : ∀ n, zero + n = n
@@ -428,7 +428,7 @@ In fact, because in this case the defining equations hold definitionally, we can
     | m zero     := m
     | m (succ n) := succ (add m n)
 
-    local infix ` + ` := add
+    local infix (name := add) ` + ` := add
 
     -- BEGIN
     theorem zero_add : ∀ n, zero + n = n
@@ -590,7 +590,7 @@ Here is essentially the definition of division on the natural numbers that is fo
     open nat
 
     def div_rec_lemma {x y : ℕ} : 0 < y ∧ y ≤ x → x - y < x :=
-    λ h, sub_lt (lt_of_lt_of_le h.left h.right) h.left
+    λ h, nat.sub_lt (lt_of_lt_of_le h.left h.right) h.left
 
     def div.F (x : ℕ) (f : Π x₁, x₁ < x → ℕ → ℕ) (y : ℕ) : ℕ :=
     if h : 0 < y ∧ y ≤ x then
@@ -617,7 +617,7 @@ The equation compiler is designed to make definitions like this more convenient.
     | x y :=
       if h : 0 < y ∧ y ≤ x then
         have x - y < x,
-          from sub_lt (lt_of_lt_of_le h.left h.right) h.left,
+          from nat.sub_lt (lt_of_lt_of_le h.left h.right) h.left,
         div (x - y) y + 1
       else
         0
@@ -638,7 +638,7 @@ The defining equation for ``div`` does *not* hold definitionally, but the equati
     | x y :=
       if h : 0 < y ∧ y ≤ x then
         have x - y < x,
-          from sub_lt (lt_of_lt_of_le h.left h.right) h.left,
+          from nat.sub_lt (lt_of_lt_of_le h.left h.right) h.left,
         div (x - y) y + 1
       else
         0
@@ -797,7 +797,7 @@ All the examples of pattern matching we considered in :numref:`pattern_matching`
     | cons   : Π {n}, α → vector n → vector (n+1)
 
     namespace vector
-    local notation h :: t := cons h t
+    local notation (name := cons) h :: t := cons h t
 
     #check @vector.cases_on
     -- Π {α : Type*}
@@ -824,7 +824,7 @@ One solution is to define an auxiliary function:
     | cons   : Π {n}, α → vector n → vector (n+1)
 
     namespace vector
-    local notation h :: t := cons h t
+    local notation (name := cons) h :: t := cons h t
 
     -- BEGIN
     def tail_aux {α : Type*} {n m : ℕ} (v : vector α m) :
@@ -857,7 +857,7 @@ The ``tail`` function is, however, easy to define using recursive equations, and
     | cons   : Π {n}, α → vector n → vector (n+1)
 
     namespace vector
-    local notation h :: t := cons h t
+    local notation (name := cons) h :: t := cons h t
 
     -- BEGIN
     def head {α : Type*} : Π {n}, vector α (n+1) → α
@@ -894,7 +894,7 @@ Note that we can omit recursive equations for "unreachable" cases such as ``head
     | cons   : Π {n}, α → vector n → vector (n+1)
 
     namespace vector
-    local notation h :: t := cons h t
+    local notation (name := cons) h :: t := cons h t
 
     def map {α β γ : Type*} (f : α → β → γ)
             : Π {n : nat}, vector α n → vector β n → vector γ n
@@ -946,7 +946,7 @@ Inaccessible terms can be used to clarify and control definitions that make use 
     | cons   : Π {n}, α → vector n → vector (n+1)
 
     namespace vector
-    local notation h :: t := cons h t
+    local notation (name := cons) h :: t := cons h t
 
     variable {α : Type u}
 
@@ -970,7 +970,7 @@ But, in fact, a case split is not required on the first argument; the ``cases_on
     | cons   : Π {n}, α → vector n → vector (n+1)
 
     namespace vector
-    local notation h :: t := cons h t
+    local notation (name := cons) h :: t := cons h t
 
     variable {α : Type u}
 
@@ -995,7 +995,7 @@ Using explicit inaccessible terms makes it even clearer what is going on.
     | cons   : Π {n}, α → vector n → vector (n+1)
 
     namespace vector
-    local notation h :: t := cons h t
+    local notation (name := cons) h :: t := cons h t
 
     variable {α : Type u}
 
