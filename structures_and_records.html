@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="ascii" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>9. Structures and Records &#8212; Theorem Proving in Lean 3 (outdated) 3.23.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=686e5160" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=5ca61e87" />
+    <script src="_static/documentation_options.js?v=5de50469"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="10. Type Classes" href="type_classes.html" />
+    <link rel="prev" title="8. Induction and Recursion" href="induction_and_recursion.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="structures-and-records">
+<span id="id1"></span><h1><span class="section-number">9. </span>Structures and Records<a class="headerlink" href="#structures-and-records" title="Link to this heading">&#182;</a></h1>
+<p>We have seen that Lean&#8217;s foundational system includes inductive types. We have, moreover, noted that it is a remarkable fact that it is possible to construct a substantial edifice of mathematics based on nothing more than the type universes, Pi types, and inductive types; everything else follows from those. The Lean standard library contains many instances of inductive types (e.g., <code class="docutils literal notranslate"><span class="pre">nat</span></code>, <code class="docutils literal notranslate"><span class="pre">prod</span></code>, <code class="docutils literal notranslate"><span class="pre">list</span></code>), and even the logical connectives are defined using inductive types.</p>
+<p>Remember that a non-recursive inductive type that contains only one constructor is called a <em>structure</em> or <em>record</em>. The product type is a structure, as is the dependent product type, that is, the Sigma type. In general, whenever we define a structure <code class="docutils literal notranslate"><span class="pre">S</span></code>, we usually define <em>projection</em> functions that allow us to &#8220;destruct&#8221; each instance of <code class="docutils literal notranslate"><span class="pre">S</span></code> and retrieve the values that are stored in its fields. The functions <code class="docutils literal notranslate"><span class="pre">prod.pr1</span></code> and <code class="docutils literal notranslate"><span class="pre">prod.pr2</span></code>, which return the first and second elements of a pair, are examples of such projections.</p>
+<p>When writing programs or formalizing mathematics, it is not uncommon to define structures containing many fields. The <code class="docutils literal notranslate"><span class="pre">structure</span></code> command, available in Lean, provides infrastructure to support this process. When we define a structure using this command, Lean automatically generates all the projection functions. The <code class="docutils literal notranslate"><span class="pre">structure</span></code> command also allows us to define new structures based on previously defined ones. Moreover, Lean provides convenient notation for defining instances of a given structure.</p>
+<section id="declaring-structures">
+<h2><span class="section-number">9.1. </span>Declaring Structures<a class="headerlink" href="#declaring-structures" title="Link to this heading">&#182;</a></h2>
+<p>The structure command is essentially a &#8220;front end&#8221; for defining inductive data types. Every <code class="docutils literal notranslate"><span class="pre">structure</span></code> declaration introduces a namespace with the same name. The general form is as follows:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>structure &lt;name&gt; &lt;parameters&gt; &lt;parent-structures&gt; : Sort u :=
+  &lt;constructor&gt; :: &lt;fields&gt;
+</pre></div>
+</div>
+<p>Most parts are optional. Here is an example:</p>
+<div style="position: relative">
+<div style='position: absolute; right: 0; top: 0; padding: 1ex'><a href="https://leanprover-community.github.io/lean-web-editor/#code=structure%20point%20(%CE%B1%20%3A%20Type*)%20%3A%3D%0Amk%20%3A%3A%20(x%20%3A%20%CE%B1)%20(y%20%3A%20%CE%B1)" target="_blank">
+try it!</a></div><div class="highlight-lean notranslate"><div class="highlight"><pre><span></span><span class="kd">structure</span><span class="w"> </span><span class="n">point</span><span class="w"> </span><span class="o">(</span><span class="n">&#945;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">Type</span><span class="bp">*</span><span class="o">)</span><span class="w"> </span><span class="o">:=</span>
+<span class="n">mk</span><span class="w"> </span><span class="o">::</span><span class="w"> </span><span class="o">(</span><span class="n">x</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#945;</span><span class="o">)</span><span class="w"> </span><span class="o">(</span><span class="n">y</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#945;</span><span class="o">)</span>
+</pre></div>
+</div>
+</div><p>Values of type <code class="docutils literal notranslate"><span class="pre">point</span></code> are created using <code class="docutils literal notranslate"><span class="pre">point.mk</span> <span class="pre">a</span> <span class="pre">b</span></code>, and the fields of a point <code class="docutils literal notranslate"><span class="pre">p</span></code> are accessed using <code class="docutils literal notranslate"><span class="pre">point.x</span> <span class="pre">p</span></code> and <code class="docutils literal notranslate"><span class="pre">point.y</span> <span class="pre">p</span></code>. The structure command also generates useful recursors and theorems. Here are some of the constructions generated for the declaration above.</p>
+<div style="position: relative">
+<div style='position: absolute; right: 0; top: 0; padding: 1ex'><a href="https://leanprover-community.github.io/lean-web-editor/#code=structure%20point%20(%CE%B1%20%3A%20Type*)%20%3A%3D%0Amk%20%3A%3A%20(x%20%3A%20%CE%B1)%20(y%20%3A%20%CE%B1)%0A%0A--%20BEGIN%0A%23check%20point%20%20%20%20%20%20%20%20%20%20%20%20%20%20--%20a%20Type%0A%23check%20point.rec_on%20%20%20%20%20%20%20--%20the%20eliminator%0A%23check%20point.x%20%20%20%20%20%20%20%20%20%20%20%20--%20a%20projection%20%2F%20field%20accessor%0A%23check%20point.y%20%20%20%20%20%20%20%20%20%20%20%20--%20a%20projection%20%2F%20field%20accessor%0A--%20END" target="_blank">
+try it!</a></div><div class="highlight-lean notranslate"><div class="highlight"><pre><span></span><span class="k">#check</span><span class="w"> </span><span class="n">point</span><span class="w">              </span><span class="c1">-- a Type</span>
+<span class="k">#check</span><span class="w"> </span><span class="n">point.rec_on</span><span class="w">       </span><span class="c1">-- the eliminator</span>
+<span class="k">#check</span><span class="w"> </span><span class="n">point.x</span><span class="w">            </span><span class="c1">-- a projection / field accessor</span>
+<span class="k">#check</span><span class="w"> </span><span class="n">point.y</span><span class="w">            </span><span class="c1">-- a projection / field accessor</span>
+</pre></div>
+</div>
+</div><p>You can obtain the complete list of generated constructions using the command <code class="docutils literal notranslate"><span class="pre">#print</span> <span class="pre">prefix</span></code>.</p>
+<div style="position: relative">
+<div style='position: absolute; right: 0; top: 0; padding: 1ex'><a href="https://leanprover-community.github.io/lean-web-editor/#code=structure%20point%20(%CE%B1%20%3A%20Type*)%20%3A%3D%0Amk%20%3A%3A%20(x%20%3A%20%CE%B1)%20(y%20%3A%20%CE%B1)%0A%0A--%20BEGIN%0A%23print%20prefix%20point%0A--%20END" target="_blank">
+try it!</a></div><div class="highlight-lean notranslate"><div class="highlight"><pre><span></span><span class="k">#print</span><span class="w"> </span><span class="kd">prefix</span><span class="w"> </span><span class="n">point</span>
+</pre></div>
+</div>
+</div><p>Here are some simple theorems and expressions that use the generated constructions. As usual, you can avoid the prefix <code class="docutils literal notranslate"><span class="pre">point</span></code> by using the command <code class="docutils literal notranslate"><span class="pre">open</span> <span class="pre">point</span></code>.</p>
+<div style="position: relative">
+<div style='position: absolute; right: 0; top: 0; padding: 1ex'><a href="https://leanprover-community.github.io/lean-web-editor/#code=structure%20point%20(%CE%B1%20%3A%20Type*)%20%3A%3D%0Amk%20%3A%3A%20(x%20%3A%20%CE%B1)%20(y%20%3A%20%CE%B1)%0A%0A--%20BEGIN%0A%23reduce%20point.x%20(point.mk%2010%2020)%0A%23reduce%20point.y%20(point.mk%2010%2020)%0A%0Aopen%20point%0A%0Aexample%20(%CE%B1%20%3A%20Type*)%20(a%20b%20%3A%20%CE%B1)%20%3A%20x%20(mk%20a%20b)%20%3D%20a%20%3A%3D%0Arfl%0A%0Aexample%20(%CE%B1%20%3A%20Type*)%20(a%20b%20%3A%20%CE%B1)%20%3A%20y%20(mk%20a%20b)%20%3D%20b%20%3A%3D%0Arfl%0A--%20END" target="_blank">
+try it!</a></div><div class="highlight-lean notranslate"><div class="highlight"><pre><span></span><span class="k">#reduce</span><span class="w"> </span><span class="n">point.x</span><span class="w"> </span><span class="o">(</span><span class="n">point.mk</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="mi">20</span><span class="o">)</span>
+<span class="k">#reduce</span><span class="w"> </span><span class="n">point.y</span><span class="w"> </span><span class="o">(</span><span class="n">point.mk</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="mi">20</span><span class="o">)</span>
+
+<span class="kn">open</span><span class="w"> </span><span class="n">point</span>
+
+<span class="kd">example</span><span class="w"> </span><span class="o">(</span><span class="n">&#945;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">Type</span><span class="bp">*</span><span class="o">)</span><span class="w"> </span><span class="o">(</span><span class="n">a</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#945;</span><span class="o">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">(</span><span class="n">mk</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">b</span><span class="o">)</span><span class="w"> </span><span class="bp">=</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">:=</span>
+<span class="n">rfl</span>
+
+<span class="kd">example</span><span class="w"> </span><span class="o">(</span><span class="n">&#945;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">Type</span><span class="bp">*</span><span class="o">)</span><span class="w"> </span><span class="o">(</span><span class="n">a</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#945;</span><span class="o">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">(</span><span class="n">mk</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">b</span><span class="o">)</span><span class="w"> </span><span class="bp">=</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">:=</span>
+<span class="n">rfl</span>
+</pre></div>
+</div>
+</div><p>Given <code class="docutils literal notranslate"><span class="pre">p</span> <span class="pre">:</span> <span class="pre">point</span> <span class="pre">nat</span></code>, the notation <code class="docutils literal notranslate"><span class="pre">p.x</span></code> is shorthand for <code class="docutils literal notranslate"><span class="pre">point.x</span> <span class="pre">p</span></code>. This provides a convenient way of accessing the fields of a structure.</p>
+<div style="position: relative">
+<div style='position: absolute; right: 0; top: 0; padding: 1ex'><a href="https://leanprover-community.github.io/lean-web-editor/#code=structure%20point%20(%CE%B1%20%3A%20Type*)%20%3A%3D%0Amk%20%3A%3A%20(x%20%3A%20%CE%B1)%20(y%20%3A%20%CE%B1)%0A%0A--%20BEGIN%0Adef%20p%20%3A%3D%20point.mk%2010%2020%0A%0A%23check%20p.x%20%20--%20nat%0A%23reduce%20p.x%20%20--%2010%0A%23reduce%20p.y%20%20--%2020%0A--%20END" target="_blank">
+try it!</a></div><div class="highlight-lean notranslate"><div class="highlight"><pre><span></span><span class="kd">def</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">point.mk</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="mi">20</span>
+
+<span class="k">#check</span><span class="w"> </span><span class="n">p.x</span><span class="w">  </span><span class="c1">-- nat</span>
+<span class="k">#reduce</span><span class="w"> </span><span class="n">p.x</span><span class="w">  </span><span class="c1">-- 10</span>
+<span class="k">#reduce</span><span class="w"> </span><span class="n">p.y</span><span class="w">  </span><span class="c1">-- 20</span>
+</pre></div>
+</div>
+</div><p>If the constructor is not provided, then a constructor is named <code class="docutils literal notranslate"><span class="pre">mk</span></code> by default.</p>
+<div style="position: relative">
+<div style='position: absolute; right: 0; top: 0; padding: 1ex'><a href="https://leanprover-community.github.io/lean-web-editor/#code=namespace%20hidden%0A--%20BEGIN%0Astructure%20prod%20(%CE%B1%20%3A%20Type*)%20(%CE%B2%20%3A%20Type*)%20%3A%3D%0A(pr1%20%3A%20%CE%B1)%20(pr2%20%3A%20%CE%B2)%0A%0A%23check%20prod.mk%0A--%20END%0Aend%20hidden" target="_blank">
+try it!</a></div><div class="highlight-lean notranslate"><div class="highlight"><pre><span></span><span class="kd">structure</span><span class="w"> </span><span class="n">prod</span><span class="w"> </span><span class="o">(</span><span class="n">&#945;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">Type</span><span class="bp">*</span><span class="o">)</span><span class="w"> </span><span class="o">(</span><span class="n">&#946;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">Type</span><span class="bp">*</span><span class="o">)</span><span class="w"> </span><span class="o">:=</span>
+<span class="o">(</span><span class="n">pr1</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#945;</span><span class="o">)</span><span class="w"> </span><span class="o">(</span><span class="n">pr2</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#946;</span><span class="o">)</span>
+
+<span class="k">#check</span><span class="w"> </span><span class="n">prod.mk</span>
+</pre></div>
+</div>
+</div><p>The dot notation is convenient not just for accessing the projections of a record, but also for applying functions defined in a namespace with the same name. Recall from <a class="reference internal" href="propositions_and_proofs.html#conjunction"><span class="std std-numref">Section 3.3.1</span></a> that if <code class="docutils literal notranslate"><span class="pre">p</span></code> has type <code class="docutils literal notranslate"><span class="pre">point</span></code>, the expression <code class="docutils literal notranslate"><span class="pre">p.foo</span></code> is interpreted as <code class="docutils literal notranslate"><span class="pre">point.foo</span> <span class="pre">p</span></code>, assuming that the first non-implicit argument to <code class="docutils literal notranslate"><span class="pre">foo</span></code> has type <code class="docutils literal notranslate"><span class="pre">point</span></code>. The expression <code class="docutils literal notranslate"><span class="pre">p.add</span> <span class="pre">q</span></code> is therefore shorthand for <code class="docutils literal notranslate"><span class="pre">point.add</span> <span class="pre">p</span> <span class="pre">q</span></code> in the example below.</p>
+<div style="position: relative">
+<div style='position: absolute; right: 0; top: 0; padding: 1ex'><a href="https://leanprover-community.github.io/lean-web-editor/#code=structure%20point%20(%CE%B1%20%3A%20Type*)%20%3A%3D%0Amk%20%3A%3A%20(x%20%3A%20%CE%B1)%20(y%20%3A%20%CE%B1)%0A%0Anamespace%20point%0A%0Adef%20add%20(p%20q%20%3A%20point%20%E2%84%95)%20%3A%3D%20mk%20(p.x%20%2B%20q.x)%20(p.y%20%2B%20q.y)%0A%0Aend%20point%0A%0Adef%20p%20%3A%20point%20%E2%84%95%20%3A%3D%20point.mk%201%202%0Adef%20q%20%3A%20point%20%E2%84%95%20%3A%3D%20point.mk%203%204%0A%0A%23reduce%20p.add%20q%20%20--%20%7Bx%20%3A%3D%204%2C%20y%20%3A%3D%206%7D" target="_blank">
+try it!</a></div><div class="highlight-lean notranslate"><div class="highlight"><pre><span></span><span class="kd">structure</span><span class="w"> </span><span class="n">point</span><span class="w"> </span><span class="o">(</span><span class="n">&#945;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">Type</span><span class="bp">*</span><span class="o">)</span><span class="w"> </span><span class="o">:=</span>
+<span class="n">mk</span><span class="w"> </span><span class="o">::</span><span class="w"> </span><span class="o">(</span><span class="n">x</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#945;</span><span class="o">)</span><span class="w"> </span><span class="o">(</span><span class="n">y</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#945;</span><span class="o">)</span>
+
+<span class="kn">namespace</span><span class="w"> </span><span class="n">point</span>
+
+<span class="kd">def</span><span class="w"> </span><span class="n">add</span><span class="w"> </span><span class="o">(</span><span class="n">p</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">point</span><span class="w"> </span><span class="n">&#8469;</span><span class="o">)</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">mk</span><span class="w"> </span><span class="o">(</span><span class="n">p.x</span><span class="w"> </span><span class="bp">+</span><span class="w"> </span><span class="n">q.x</span><span class="o">)</span><span class="w"> </span><span class="o">(</span><span class="n">p.y</span><span class="w"> </span><span class="bp">+</span><span class="w"> </span><span class="n">q.y</span><span class="o">)</span>
+
+<span class="kd">end</span><span class="w"> </span><span class="n">point</span>
+
+<span class="kd">def</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">point</span><span class="w"> </span><span class="n">&#8469;</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">point.mk</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">2</span>
+<span class="kd">def</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">point</span><span class="w"> </span><span class="n">&#8469;</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">point.mk</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="mi">4</span>
+
+<span class="k">#reduce</span><span class="w"> </span><span class="n">p.add</span><span class="w"> </span><span class="n">q</span><span class="w">  </span><span class="c1">-- {x := 4, y := 6}</span>
+</pre></div>
+</div>
+</div><p>In the next chapter, you will learn how to define a function like <code class="docutils literal notranslate"><span class="pre">add</span></code> so that it works generically for elements of <code class="docutils literal notranslate"><span class="pre">point</span> <span class="pre">&#945;</span></code> rather than just <code class="docutils literal notranslate"><span class="pre">point</span> <span class="pre">&#8469;</span></code>, assuming <code class="docutils literal notranslate"><span class="pre">&#945;</span></code> has an associated addition operation.</p>
+<p>More generally, given an expression <code class="docutils literal notranslate"><span class="pre">p.foo</span> <span class="pre">x</span> <span class="pre">y</span> <span class="pre">z</span></code>, Lean will insert <code class="docutils literal notranslate"><span class="pre">p</span></code> at the first non-implicit argument to <code class="docutils literal notranslate"><span class="pre">foo</span></code> of type <code class="docutils literal notranslate"><span class="pre">point</span></code>. For example, with the definition of scalar multiplication below, <code class="docutils literal notranslate"><span class="pre">p.smul</span> <span class="pre">3</span></code> is interpreted as <code class="docutils literal notranslate"><span class="pre">point.smul</span> <span class="pre">3</span> <span class="pre">p</span></code>.</p>
+<div style="position: relative">
+<div style='position: absolute; right: 0; top: 0; padding: 1ex'><a href="https://leanprover-community.github.io/lean-web-editor/#code=structure%20point%20(%CE%B1%20%3A%20Type*)%20%3A%3D%0Amk%20%3A%3A%20(x%20%3A%20%CE%B1)%20(y%20%3A%20%CE%B1)%0A%0Adef%20point.smul%20(n%20%3A%20%E2%84%95)%20(p%20%3A%20point%20%E2%84%95)%20%3A%3D%0Apoint.mk%20(n%20*%20p.x)%20(n%20*%20p.y)%0A%0Adef%20p%20%3A%20point%20%E2%84%95%20%3A%3D%20point.mk%201%202%0A%0A%23reduce%20p.smul%203%20%20--%20%7Bx%20%3A%3D%203%2C%20y%20%3A%3D%206%7D" target="_blank">
+try it!</a></div><div class="highlight-lean notranslate"><div class="highlight"><pre><span></span><span class="kd">structure</span><span class="w"> </span><span class="n">point</span><span class="w"> </span><span class="o">(</span><span class="n">&#945;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">Type</span><span class="bp">*</span><span class="o">)</span><span class="w"> </span><span class="o">:=</span>
+<span class="n">mk</span><span class="w"> </span><span class="o">::</span><span class="w"> </span><span class="o">(</span><span class="n">x</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#945;</span><span class="o">)</span><span class="w"> </span><span class="o">(</span><span class="n">y</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#945;</span><span class="o">)</span>
+
+<span class="kd">def</span><span class="w"> </span><span class="n">point.smul</span><span class="w"> </span><span class="o">(</span><span class="n">n</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#8469;</span><span class="o">)</span><span class="w"> </span><span class="o">(</span><span class="n">p</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">point</span><span class="w"> </span><span class="n">&#8469;</span><span class="o">)</span><span class="w"> </span><span class="o">:=</span>
+<span class="n">point.mk</span><span class="w"> </span><span class="o">(</span><span class="n">n</span><span class="w"> </span><span class="bp">*</span><span class="w"> </span><span class="n">p.x</span><span class="o">)</span><span class="w"> </span><span class="o">(</span><span class="n">n</span><span class="w"> </span><span class="bp">*</span><span class="w"> </span><span class="n">p.y</span><span class="o">)</span>
+
+<span class="kd">def</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">point</span><span class="w"> </span><span class="n">&#8469;</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">point.mk</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">2</span>
+
+<span class="k">#reduce</span><span class="w"> </span><span class="n">p.smul</span><span class="w"> </span><span class="mi">3</span><span class="w">  </span><span class="c1">-- {x := 3, y := 6}</span>
+</pre></div>
+</div>
+</div><p>It is common to use a similar trick with the <code class="docutils literal notranslate"><span class="pre">list.map</span></code> function, which takes a list as its second non-implicit argument:</p>
+<div style="position: relative">
+<div style='position: absolute; right: 0; top: 0; padding: 1ex'><a href="https://leanprover-community.github.io/lean-web-editor/#code=%23check%20%40list.map%0A--%20%CE%A0%20%7B%CE%B1%20%3A%20Type%20u_1%7D%20%7B%CE%B2%20%3A%20Type%20u_2%7D%2C%20(%CE%B1%20%E2%86%92%20%CE%B2)%20%E2%86%92%20list%20%CE%B1%20%E2%86%92%20list%20%CE%B2%0A%0Adef%20l%20%3A%20list%20nat%20%3A%3D%20%5B1%2C%202%2C%203%5D%0Adef%20f%20%3A%20nat%20%E2%86%92%20nat%20%3A%3D%20%CE%BB%20x%2C%20x%20*%20x%0A%0A%23eval%20l.map%20f%20%20--%20%5B1%2C%204%2C%209%5D" target="_blank">
+try it!</a></div><div class="highlight-lean notranslate"><div class="highlight"><pre><span></span><span class="k">#check</span><span class="w"> </span><span class="bp">@</span><span class="n">list.map</span>
+<span class="c1">-- &#928; {&#945; : Type u_1} {&#946; : Type u_2}, (&#945; &#8594; &#946;) &#8594; list &#945; &#8594; list &#946;</span>
+
+<span class="kd">def</span><span class="w"> </span><span class="n">l</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">list</span><span class="w"> </span><span class="n">nat</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="o">[</span><span class="mi">1</span><span class="o">,</span><span class="w"> </span><span class="mi">2</span><span class="o">,</span><span class="w"> </span><span class="mi">3</span><span class="o">]</span>
+<span class="kd">def</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">nat</span><span class="w"> </span><span class="bp">&#8594;</span><span class="w"> </span><span class="n">nat</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="bp">&#955;</span><span class="w"> </span><span class="n">x</span><span class="o">,</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="bp">*</span><span class="w"> </span><span class="n">x</span>
+
+<span class="k">#eval</span><span class="w"> </span><span class="n">l.map</span><span class="w"> </span><span class="n">f</span><span class="w">  </span><span class="c1">-- [1, 4, 9]</span>
+</pre></div>
+</div>
+</div><p>Here <code class="docutils literal notranslate"><span class="pre">l.map</span> <span class="pre">f</span></code> is interpreted as <code class="docutils literal notranslate"><span class="pre">list.map</span> <span class="pre">f</span> <span class="pre">l</span></code>.</p>
+<p>If you have a structure definition that depends on a type, you can make it polymorphic over universe levels using a previously declared universe variable, declaring a universe variable on the fly, or using an underscore:</p>
+<div style="position: relative">
+<div style='position: absolute; right: 0; top: 0; padding: 1ex'><a href="https://leanprover-community.github.io/lean-web-editor/#code=universe%20u%0A%0Astructure%20point%20(%CE%B1%20%3A%20Type%20u)%20%3A%3D%0Amk%20%3A%3A%20(x%20%3A%20%CE%B1)%20(y%20%3A%20%CE%B1)%0A%0Astructure%20%7Bv%7D%20point2%20(%CE%B1%20%3A%20Type%20v)%20%3A%3D%0Amk%20%3A%3A%20(x%20%3A%20%CE%B1)%20(y%20%3A%20%CE%B1)%0A%0Astructure%20point3%20(%CE%B1%20%3A%20Type%20_)%20%3A%3D%0Amk%20%3A%3A%20(x%20%3A%20%CE%B1)%20(y%20%3A%20%CE%B1)%0A%0A%23check%20%40point%0A%23check%20%40point2%0A%23check%20%40point3" target="_blank">
+try it!</a></div><div class="highlight-lean notranslate"><div class="highlight"><pre><span></span><span class="kd">universe</span><span class="w"> </span><span class="n">u</span>
+
+<span class="kd">structure</span><span class="w"> </span><span class="n">point</span><span class="w"> </span><span class="o">(</span><span class="n">&#945;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">Type</span><span class="w"> </span><span class="n">u</span><span class="o">)</span><span class="w"> </span><span class="o">:=</span>
+<span class="n">mk</span><span class="w"> </span><span class="o">::</span><span class="w"> </span><span class="o">(</span><span class="n">x</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#945;</span><span class="o">)</span><span class="w"> </span><span class="o">(</span><span class="n">y</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#945;</span><span class="o">)</span>
+
+<span class="kd">structure</span><span class="w"> </span><span class="o">{</span><span class="n">v</span><span class="o">}</span><span class="w"> </span><span class="n">point2</span><span class="w"> </span><span class="o">(</span><span class="n">&#945;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">Type</span><span class="w"> </span><span class="n">v</span><span class="o">)</span><span class="w"> </span><span class="o">:=</span>
+<span class="n">mk</span><span class="w"> </span><span class="o">::</span><span class="w"> </span><span class="o">(</span><span class="n">x</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#945;</span><span class="o">)</span><span class="w"> </span><span class="o">(</span><span class="n">y</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#945;</span><span class="o">)</span>
+
+<span class="kd">structure</span><span class="w"> </span><span class="n">point3</span><span class="w"> </span><span class="o">(</span><span class="n">&#945;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">Type</span><span class="w"> </span><span class="n">_</span><span class="o">)</span><span class="w"> </span><span class="o">:=</span>
+<span class="n">mk</span><span class="w"> </span><span class="o">::</span><span class="w"> </span><span class="o">(</span><span class="n">x</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#945;</span><span class="o">)</span><span class="w"> </span><span class="o">(</span><span class="n">y</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#945;</span><span class="o">)</span>
+
+<span class="k">#check</span><span class="w"> </span><span class="bp">@</span><span class="n">point</span>
+<span class="k">#check</span><span class="w"> </span><span class="bp">@</span><span class="n">point2</span>
+<span class="k">#check</span><span class="w"> </span><span class="bp">@</span><span class="n">point3</span>
+</pre></div>
+</div>
+</div><p>The three variations have the same net effect. The annotations in the next example force the parameters <code class="docutils literal notranslate"><span class="pre">&#945;</span></code> and <code class="docutils literal notranslate"><span class="pre">&#946;</span></code> to be types from the same universe, and set the return type to also be in the same universe.</p>
+<div style="position: relative">
+<div style='position: absolute; right: 0; top: 0; padding: 1ex'><a href="https://leanprover-community.github.io/lean-web-editor/#code=namespace%20hidden%0A--%20BEGIN%0Astructure%20%7Bu%7D%20prod%20(%CE%B1%20%3A%20Type%20u)%20(%CE%B2%20%3A%20Type%20u)%20%3A%0A%20%20Type%20u%20%3A%3D%0A(pr1%20%3A%20%CE%B1)%20(pr2%20%3A%20%CE%B2)%0A%0Aset_option%20pp.universes%20true%0A%23check%20prod.mk%0A--%20END%0Aend%20hidden" target="_blank">
+try it!</a></div><div class="highlight-lean notranslate"><div class="highlight"><pre><span></span><span class="kd">structure</span><span class="w"> </span><span class="o">{</span><span class="n">u</span><span class="o">}</span><span class="w"> </span><span class="n">prod</span><span class="w"> </span><span class="o">(</span><span class="n">&#945;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">Type</span><span class="w"> </span><span class="n">u</span><span class="o">)</span><span class="w"> </span><span class="o">(</span><span class="n">&#946;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">Type</span><span class="w"> </span><span class="n">u</span><span class="o">)</span><span class="w"> </span><span class="o">:</span>
+<span class="w">  </span><span class="kt">Type</span><span class="w"> </span><span class="n">u</span><span class="w"> </span><span class="o">:=</span>
+<span class="o">(</span><span class="n">pr1</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#945;</span><span class="o">)</span><span class="w"> </span><span class="o">(</span><span class="n">pr2</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#946;</span><span class="o">)</span>
+
+<span class="kd">set_option</span><span class="w"> </span><span class="n">pp.universes</span><span class="w"> </span><span class="n">true</span>
+<span class="k">#check</span><span class="w"> </span><span class="n">prod.mk</span>
+</pre></div>
+</div>
+</div><p>The <code class="docutils literal notranslate"><span class="pre">set_option</span></code> command above instructs Lean to display the universe levels. We can use the anonymous constructor notation to build structure values whenever the expected type is known.</p>
+<div style="position: relative">
+<div style='position: absolute; right: 0; top: 0; padding: 1ex'><a href="https://leanprover-community.github.io/lean-web-editor/#code=namespace%20hidden%0A--%20BEGIN%0Astructure%20%7Bu%7D%20prod%20(%CE%B1%20%3A%20Type%20u)%20(%CE%B2%20%3A%20Type%20u)%20%3A%0A%20%20Type%20u%20%3A%3D%0A(pr1%20%3A%20%CE%B1)%20(pr2%20%3A%20%CE%B2)%0A%0Aexample%20%3A%20prod%20nat%20nat%20%3A%3D%0A%E2%9F%A81%2C%202%E2%9F%A9%0A%0A%23check%20(%E2%9F%A81%2C%202%E2%9F%A9%20%3A%20prod%20nat%20nat)%0A--%20END%0Aend%20hidden" target="_blank">
+try it!</a></div><div class="highlight-lean notranslate"><div class="highlight"><pre><span></span><span class="kd">structure</span><span class="w"> </span><span class="o">{</span><span class="n">u</span><span class="o">}</span><span class="w"> </span><span class="n">prod</span><span class="w"> </span><span class="o">(</span><span class="n">&#945;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">Type</span><span class="w"> </span><span class="n">u</span><span class="o">)</span><span class="w"> </span><span class="o">(</span><span class="n">&#946;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">Type</span><span class="w"> </span><span class="n">u</span><span class="o">)</span><span class="w"> </span><span class="o">:</span>
+<span class="w">  </span><span class="kt">Type</span><span class="w"> </span><span class="n">u</span><span class="w"> </span><span class="o">:=</span>
+<span class="o">(</span><span class="n">pr1</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#945;</span><span class="o">)</span><span class="w"> </span><span class="o">(</span><span class="n">pr2</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#946;</span><span class="o">)</span>
+
+<span class="kd">example</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">prod</span><span class="w"> </span><span class="n">nat</span><span class="w"> </span><span class="n">nat</span><span class="w"> </span><span class="o">:=</span>
+<span class="o">&#10216;</span><span class="mi">1</span><span class="o">,</span><span class="w"> </span><span class="mi">2</span><span class="o">&#10217;</span>
+
+<span class="k">#check</span><span class="w"> </span><span class="o">(&#10216;</span><span class="mi">1</span><span class="o">,</span><span class="w"> </span><span class="mi">2</span><span class="o">&#10217;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">prod</span><span class="w"> </span><span class="n">nat</span><span class="w"> </span><span class="n">nat</span><span class="o">)</span>
+</pre></div>
+</div>
+</div></section>
+<section id="objects">
+<h2><span class="section-number">9.2. </span>Objects<a class="headerlink" href="#objects" title="Link to this heading">&#182;</a></h2>
+<p>We have been using constructors to create elements of a structure type. For structures containing many fields, this is often inconvenient, because we have to remember the order in which the fields were defined. Lean therefore provides the following alternative notations for defining elements of a structure type.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>{ structure-name . (&lt;field-name&gt; := &lt;expr&gt;)* }
+or
+{ (&lt;field-name&gt; := &lt;expr&gt;)* }
+</pre></div>
+</div>
+<p>The prefix <code class="docutils literal notranslate"><span class="pre">structure-name</span> <span class="pre">.</span></code> can be omitted whenever the name of the structure can be inferred from the expected type. For example, we use this notation to define &#8220;points.&#8221; The order that the fields are specified does not matter, so all the expressions below define the same point.</p>
+<div style="position: relative">
+<div style='position: absolute; right: 0; top: 0; padding: 1ex'><a href="https://leanprover-community.github.io/lean-web-editor/#code=structure%20point%20(%CE%B1%20%3A%20Type*)%20%3A%3D%0Amk%20%3A%3A%20(x%20%3A%20%CE%B1)%20(y%20%3A%20%CE%B1)%0A%0A%23check%20%7B%20point%20.%20x%20%3A%3D%2010%2C%20y%20%3A%3D%2020%20%7D%20%20--%20point%20%E2%84%95%0A%23check%20%7B%20point%20.%20y%20%3A%3D%2020%2C%20x%20%3A%3D%2010%20%7D%0A%23check%20(%7Bx%20%3A%3D%2010%2C%20y%20%3A%3D%2020%7D%20%3A%20point%20nat)%0A%0Aexample%20%3A%20point%20nat%20%3A%3D%0A%7B%20y%20%3A%3D%2020%2C%20x%20%3A%3D%2010%20%7D" target="_blank">
+try it!</a></div><div class="highlight-lean notranslate"><div class="highlight"><pre><span></span><span class="kd">structure</span><span class="w"> </span><span class="n">point</span><span class="w"> </span><span class="o">(</span><span class="n">&#945;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">Type</span><span class="bp">*</span><span class="o">)</span><span class="w"> </span><span class="o">:=</span>
+<span class="n">mk</span><span class="w"> </span><span class="o">::</span><span class="w"> </span><span class="o">(</span><span class="n">x</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#945;</span><span class="o">)</span><span class="w"> </span><span class="o">(</span><span class="n">y</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#945;</span><span class="o">)</span>
+
+<span class="k">#check</span><span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="n">point</span><span class="w"> </span><span class="bp">.</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="mi">10</span><span class="o">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="mi">20</span><span class="w"> </span><span class="o">}</span><span class="w">  </span><span class="c1">-- point &#8469;</span>
+<span class="k">#check</span><span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="n">point</span><span class="w"> </span><span class="bp">.</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="mi">20</span><span class="o">,</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="o">}</span>
+<span class="k">#check</span><span class="w"> </span><span class="o">({</span><span class="n">x</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="mi">10</span><span class="o">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="mi">20</span><span class="o">}</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">point</span><span class="w"> </span><span class="n">nat</span><span class="o">)</span>
+
+<span class="kd">example</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">point</span><span class="w"> </span><span class="n">nat</span><span class="w"> </span><span class="o">:=</span>
+<span class="o">{</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="mi">20</span><span class="o">,</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="o">}</span>
+</pre></div>
+</div>
+</div><p>If the value of a field is not specified, Lean tries to infer it. If the unspecified fields cannot be inferred, Lean signs an error indicating the corresponding placeholder could not be synthesized.</p>
+<div style="position: relative">
+<div style='position: absolute; right: 0; top: 0; padding: 1ex'><a href="https://leanprover-community.github.io/lean-web-editor/#code=structure%20my_struct%20%3A%3D%0Amk%20%3A%3A%20%7B%CE%B1%20%3A%20Type*%7D%20%7B%CE%B2%20%3A%20Type*%7D%20(a%20%3A%20%CE%B1)%20(b%20%3A%20%CE%B2)%0A%0A%23check%20%7B%20my_struct%20.%20a%20%3A%3D%2010%2C%20b%20%3A%3D%20true%20%7D" target="_blank">
+try it!</a></div><div class="highlight-lean notranslate"><div class="highlight"><pre><span></span><span class="kd">structure</span><span class="w"> </span><span class="n">my_struct</span><span class="w"> </span><span class="o">:=</span>
+<span class="n">mk</span><span class="w"> </span><span class="o">::</span><span class="w"> </span><span class="o">{</span><span class="n">&#945;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">Type</span><span class="bp">*</span><span class="o">}</span><span class="w"> </span><span class="o">{</span><span class="n">&#946;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">Type</span><span class="bp">*</span><span class="o">}</span><span class="w"> </span><span class="o">(</span><span class="n">a</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#945;</span><span class="o">)</span><span class="w"> </span><span class="o">(</span><span class="n">b</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#946;</span><span class="o">)</span>
+
+<span class="k">#check</span><span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="n">my_struct</span><span class="w"> </span><span class="bp">.</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="mi">10</span><span class="o">,</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">true</span><span class="w"> </span><span class="o">}</span>
+</pre></div>
+</div>
+</div><p><em>Record update</em> is another common operation which amounts to creating a new record object by modifying the value of one or more fields in an old one. Lean allows you to specify that unassigned fields in the specification of a record should be taken from a previous defined record  object <code class="docutils literal notranslate"><span class="pre">r</span></code> by adding the annotation <code class="docutils literal notranslate"><span class="pre">..r</span></code> after the field assignments. If more than one record object is provided, then they are visited in order until Lean finds one the contains the unspecified field. Lean raises an error if any of the field names remain unspecified after all the objects are visited.</p>
+<div style="position: relative">
+<div style='position: absolute; right: 0; top: 0; padding: 1ex'><a href="https://leanprover-community.github.io/lean-web-editor/#code=structure%20point%20(%CE%B1%20%3A%20Type*)%20%3A%3D%0Amk%20%3A%3A%20(x%20%3A%20%CE%B1)%20(y%20%3A%20%CE%B1)%0A%0Adef%20p%20%3A%20point%20nat%20%3A%3D%0A%7Bx%20%3A%3D%201%2C%20y%20%3A%3D%202%7D%0A%0A%23reduce%20%7By%20%3A%3D%203%2C%20..p%7D%20%20--%20%7Bx%20%3A%3D%201%2C%20y%20%3A%3D%203%7D%0A%23reduce%20%7Bx%20%3A%3D%204%2C%20..p%7D%20%20--%20%7Bx%20%3A%3D%204%2C%20y%20%3A%3D%202%7D%0A%0Astructure%20point3%20(%CE%B1%20%3A%20Type*)%20%3A%3D%0Amk%20%3A%3A%20(x%20%3A%20%CE%B1)%20(y%20%3A%20%CE%B1)%20(z%20%3A%20%CE%B1)%0A%0Adef%20q%20%3A%20point3%20nat%20%3A%3D%0A%7Bx%20%3A%3D%205%2C%20y%20%3A%3D%205%2C%20z%20%3A%3D%205%7D%0A%0Adef%20r%20%3A%20point3%20nat%20%3A%3D%20%7Bx%20%3A%3D%206%2C%20..p%2C%20..q%7D%0A%0A%23print%20r%20%20--%20%7Bx%20%3A%3D%206%2C%20y%20%3A%3D%20p.y%2C%20z%20%3A%3D%20q.z%7D%0A%23reduce%20r%20%20--%20%7Bx%20%3A%3D%206%2C%20y%20%3A%3D%202%2C%20z%20%3A%3D%205%7D" target="_blank">
+try it!</a></div><div class="highlight-lean notranslate"><div class="highlight"><pre><span></span><span class="kd">structure</span><span class="w"> </span><span class="n">point</span><span class="w"> </span><span class="o">(</span><span class="n">&#945;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">Type</span><span class="bp">*</span><span class="o">)</span><span class="w"> </span><span class="o">:=</span>
+<span class="n">mk</span><span class="w"> </span><span class="o">::</span><span class="w"> </span><span class="o">(</span><span class="n">x</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#945;</span><span class="o">)</span><span class="w"> </span><span class="o">(</span><span class="n">y</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#945;</span><span class="o">)</span>
+
+<span class="kd">def</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">point</span><span class="w"> </span><span class="n">nat</span><span class="w"> </span><span class="o">:=</span>
+<span class="o">{</span><span class="n">x</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="mi">1</span><span class="o">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="mi">2</span><span class="o">}</span>
+
+<span class="k">#reduce</span><span class="w"> </span><span class="o">{</span><span class="n">y</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="mi">3</span><span class="o">,</span><span class="w"> </span><span class="bp">..</span><span class="n">p</span><span class="o">}</span><span class="w">  </span><span class="c1">-- {x := 1, y := 3}</span>
+<span class="k">#reduce</span><span class="w"> </span><span class="o">{</span><span class="n">x</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="mi">4</span><span class="o">,</span><span class="w"> </span><span class="bp">..</span><span class="n">p</span><span class="o">}</span><span class="w">  </span><span class="c1">-- {x := 4, y := 2}</span>
+
+<span class="kd">structure</span><span class="w"> </span><span class="n">point3</span><span class="w"> </span><span class="o">(</span><span class="n">&#945;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">Type</span><span class="bp">*</span><span class="o">)</span><span class="w"> </span><span class="o">:=</span>
+<span class="n">mk</span><span class="w"> </span><span class="o">::</span><span class="w"> </span><span class="o">(</span><span class="n">x</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#945;</span><span class="o">)</span><span class="w"> </span><span class="o">(</span><span class="n">y</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#945;</span><span class="o">)</span><span class="w"> </span><span class="o">(</span><span class="n">z</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#945;</span><span class="o">)</span>
+
+<span class="kd">def</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">point3</span><span class="w"> </span><span class="n">nat</span><span class="w"> </span><span class="o">:=</span>
+<span class="o">{</span><span class="n">x</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="mi">5</span><span class="o">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="mi">5</span><span class="o">,</span><span class="w"> </span><span class="n">z</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="mi">5</span><span class="o">}</span>
+
+<span class="kd">def</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">point3</span><span class="w"> </span><span class="n">nat</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="o">{</span><span class="n">x</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="mi">6</span><span class="o">,</span><span class="w"> </span><span class="bp">..</span><span class="n">p</span><span class="o">,</span><span class="w"> </span><span class="bp">..</span><span class="n">q</span><span class="o">}</span>
+
+<span class="k">#print</span><span class="w"> </span><span class="n">r</span><span class="w">  </span><span class="c1">-- {x := 6, y := p.y, z := q.z}</span>
+<span class="k">#reduce</span><span class="w"> </span><span class="n">r</span><span class="w">  </span><span class="c1">-- {x := 6, y := 2, z := 5}</span>
+</pre></div>
+</div>
+</div></section>
+<section id="inheritance">
+<h2><span class="section-number">9.3. </span>Inheritance<a class="headerlink" href="#inheritance" title="Link to this heading">&#182;</a></h2>
+<p>We can <em>extend</em> existing structures by adding new fields. This feature allow us to simulate a form of <em>inheritance</em>.</p>
+<div style="position: relative">
+<div style='position: absolute; right: 0; top: 0; padding: 1ex'><a href="https://leanprover-community.github.io/lean-web-editor/#code=structure%20point%20(%CE%B1%20%3A%20Type*)%20%3A%3D%0Amk%20%3A%3A%20(x%20%3A%20%CE%B1)%20(y%20%3A%20%CE%B1)%0A%0Ainductive%20color%0A%7C%20red%20%7C%20green%20%7C%20blue%0A%0Astructure%20color_point%20(%CE%B1%20%3A%20Type*)%20extends%20point%20%CE%B1%20%3A%3D%0Amk%20%3A%3A%20(c%20%3A%20color)" target="_blank">
+try it!</a></div><div class="highlight-lean notranslate"><div class="highlight"><pre><span></span><span class="kd">structure</span><span class="w"> </span><span class="n">point</span><span class="w"> </span><span class="o">(</span><span class="n">&#945;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">Type</span><span class="bp">*</span><span class="o">)</span><span class="w"> </span><span class="o">:=</span>
+<span class="n">mk</span><span class="w"> </span><span class="o">::</span><span class="w"> </span><span class="o">(</span><span class="n">x</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#945;</span><span class="o">)</span><span class="w"> </span><span class="o">(</span><span class="n">y</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#945;</span><span class="o">)</span>
+
+<span class="kd">inductive</span><span class="w"> </span><span class="n">color</span>
+<span class="bp">|</span><span class="w"> </span><span class="n">red</span><span class="w"> </span><span class="bp">|</span><span class="w"> </span><span class="n">green</span><span class="w"> </span><span class="bp">|</span><span class="w"> </span><span class="n">blue</span>
+
+<span class="kd">structure</span><span class="w"> </span><span class="n">color_point</span><span class="w"> </span><span class="o">(</span><span class="n">&#945;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">Type</span><span class="bp">*</span><span class="o">)</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">point</span><span class="w"> </span><span class="n">&#945;</span><span class="w"> </span><span class="o">:=</span>
+<span class="n">mk</span><span class="w"> </span><span class="o">::</span><span class="w"> </span><span class="o">(</span><span class="n">c</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">color</span><span class="o">)</span>
+</pre></div>
+</div>
+</div><p>In the next example, we define a structure using multiple inheritance, and then define an object using objects of the parent structures.</p>
+<div style="position: relative">
+<div style='position: absolute; right: 0; top: 0; padding: 1ex'><a href="https://leanprover-community.github.io/lean-web-editor/#code=structure%20point%20(%CE%B1%20%3A%20Type*)%20%3A%3D%0A(x%20%3A%20%CE%B1)%20(y%20%3A%20%CE%B1)%20(z%20%3A%20%CE%B1)%0A%0Astructure%20rgb_val%20%3A%3D%0A(red%20%3A%20nat)%20(green%20%3A%20nat)%20(blue%20%3A%20nat)%0A%0Astructure%20red_green_point%20(%CE%B1%20%3A%20Type*)%20extends%20point%20%CE%B1%2C%20rgb_val%20%3A%3D%0A(no_blue%20%3A%20blue%20%3D%200)%0A%0Adef%20p%20%20%20%3A%20point%20nat%20%3A%3D%20%7Bx%20%3A%3D%2010%2C%20y%20%3A%3D%2010%2C%20z%20%3A%3D%2020%7D%0Adef%20rgp%20%3A%20red_green_point%20nat%20%3A%3D%0A%7Bred%20%3A%3D%20200%2C%20green%20%3A%3D%2040%2C%20blue%20%3A%3D%200%2C%20no_blue%20%3A%3D%20rfl%2C%20..p%7D%0A%0Aexample%20%3A%20rgp.x%20%20%20%3D%2010%20%3A%3D%20rfl%0Aexample%20%3A%20rgp.red%20%3D%20200%20%3A%3D%20rfl" target="_blank">
+try it!</a></div><div class="highlight-lean notranslate"><div class="highlight"><pre><span></span><span class="kd">structure</span><span class="w"> </span><span class="n">point</span><span class="w"> </span><span class="o">(</span><span class="n">&#945;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">Type</span><span class="bp">*</span><span class="o">)</span><span class="w"> </span><span class="o">:=</span>
+<span class="o">(</span><span class="n">x</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#945;</span><span class="o">)</span><span class="w"> </span><span class="o">(</span><span class="n">y</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#945;</span><span class="o">)</span><span class="w"> </span><span class="o">(</span><span class="n">z</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">&#945;</span><span class="o">)</span>
+
+<span class="kd">structure</span><span class="w"> </span><span class="n">rgb_val</span><span class="w"> </span><span class="o">:=</span>
+<span class="o">(</span><span class="n">red</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">nat</span><span class="o">)</span><span class="w"> </span><span class="o">(</span><span class="n">green</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">nat</span><span class="o">)</span><span class="w"> </span><span class="o">(</span><span class="n">blue</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">nat</span><span class="o">)</span>
+
+<span class="kd">structure</span><span class="w"> </span><span class="n">red_green_point</span><span class="w"> </span><span class="o">(</span><span class="n">&#945;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="kt">Type</span><span class="bp">*</span><span class="o">)</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">point</span><span class="w"> </span><span class="n">&#945;</span><span class="o">,</span><span class="w"> </span><span class="n">rgb_val</span><span class="w"> </span><span class="o">:=</span>
+<span class="o">(</span><span class="n">no_blue</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">blue</span><span class="w"> </span><span class="bp">=</span><span class="w"> </span><span class="mi">0</span><span class="o">)</span>
+
+<span class="kd">def</span><span class="w"> </span><span class="n">p</span><span class="w">   </span><span class="o">:</span><span class="w"> </span><span class="n">point</span><span class="w"> </span><span class="n">nat</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="o">{</span><span class="n">x</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="mi">10</span><span class="o">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="mi">10</span><span class="o">,</span><span class="w"> </span><span class="n">z</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="mi">20</span><span class="o">}</span>
+<span class="kd">def</span><span class="w"> </span><span class="n">rgp</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">red_green_point</span><span class="w"> </span><span class="n">nat</span><span class="w"> </span><span class="o">:=</span>
+<span class="o">{</span><span class="n">red</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="mi">200</span><span class="o">,</span><span class="w"> </span><span class="n">green</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="mi">40</span><span class="o">,</span><span class="w"> </span><span class="n">blue</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="mi">0</span><span class="o">,</span><span class="w"> </span><span class="n">no_blue</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">rfl</span><span class="o">,</span><span class="w"> </span><span class="bp">..</span><span class="n">p</span><span class="o">}</span>
+
+<span class="kd">example</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">rgp.x</span><span class="w">   </span><span class="bp">=</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">rfl</span>
+<span class="kd">example</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">rgp.red</span><span class="w"> </span><span class="bp">=</span><span class="w"> </span><span class="mi">200</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="n">rfl</span>
+</pre></div>
+</div>
+</div></section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Theorem Proving in Lean 3 (outdated)</a></h1>
+
+
+
+
+
+
+
+
+<!-- <h3>Navigation</h3> -->
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependent_type_theory.html">2. Dependent Type Theory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="propositions_and_proofs.html">3. Propositions and Proofs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quantifiers_and_equality.html">4. Quantifiers and Equality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tactics.html">5. Tactics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="interacting_with_lean.html">6. Interacting with Lean</a></li>
+<li class="toctree-l1"><a class="reference internal" href="inductive_types.html">7. Inductive Types</a></li>
+<li class="toctree-l1"><a class="reference internal" href="induction_and_recursion.html">8. Induction and Recursion</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">9. Structures and Records</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#declaring-structures">9.1. Declaring Structures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#objects">9.2. Objects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#inheritance">9.3. Inheritance</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="type_classes.html">10. Type Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="axioms_and_computation.html">11. Axioms and Computation</a></li>
+</ul>
+
+
+<hr />
+<ul>
+    
+    <li class="toctree-l1"><a href="theorem_proving_in_lean.pdf">PDF version</a></li>
+    
+    <li class="toctree-l1"><a href="https://leanprover.github.io/">Lean Home</a></li>
+    
+</ul>
+
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2017, Jeremy Avigad, Leonardo de Moura, and Soonho Kong.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.1.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/structures_and_records.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
