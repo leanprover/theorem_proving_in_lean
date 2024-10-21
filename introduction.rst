@@ -27,7 +27,7 @@ There are currently two ways to use Lean. The first is to run it from the web: a
 
 The second way to use Lean is to install and run it natively on your computer. The native version is much faster than the web version, and is more flexible in other ways, too. Special modes in Visual Studio Code (VS Code for short) and Emacs offer powerful support for writing and debugging proofs, and is much better suited for serious use. The source code, and instructions for building Lean, are available at https://github.com/leanprover/lean/.
 
-This tutorial describes the current version of Lean, known as Lean 3. A prior version, Lean 2, had special support for homotopy type theory. You can find Lean 2 and the HoTT library at https://github.com/leanprover/lean2/. The tutorial for that version of Lean is at https://leanprover.github.io/tutorial/.
+This tutorial describes an old version of Lean, known as Lean 3. The current version of Lean is Lean 4 and up-to-date documentation resources can be found at https://lean-lang.org/documentation/. A prior version, Lean 2, had special support for homotopy type theory. You can find Lean 2 and the HoTT library at https://github.com/leanprover/lean2/. The tutorial for that version of Lean is at https://leanprover.github.io/tutorial/.
 
 About this Book
 ---------------

@@ -1,5 +1,5 @@
-Theorem Proving in Lean
-=======================
+Theorem Proving in Lean 3 (outdated)
+====================================
 
 .. toctree::
     :numbered:
