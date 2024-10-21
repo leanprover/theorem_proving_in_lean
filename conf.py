@@ -45,7 +45,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Theorem Proving in Lean'
+project = u'Theorem Proving in Lean 3 (outdated)'
 copyright = u'2017, Jeremy Avigad, Leonardo de Moura, and Soonho Kong'
 author = u'Jeremy Avigad, Leonardo de Moura, and Soonho Kong'
 
