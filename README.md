@@ -1,5 +1,11 @@
-Theorem Proving in Lean
------------------------
+# WARNING: THIS REPOSITORY IS FOR THE END-OF-LIFE LEAN 3
+
+You are almost certainly looking for the Lean 4 version
+of this repository: https://github.com/leanprover/theorem_proving_in_lean4 .
+Lean 3 is now end-of-life.
+
+Theorem Proving in Lean 3
+-------------------------
 
 Built using Sphinx and restructured text.
 
