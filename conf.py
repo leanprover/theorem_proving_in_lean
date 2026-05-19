@@ -147,7 +147,7 @@ latex_additional_files = ['unixode.sty']
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     #
-    # 'papersize': 'letterpaper',
+    'papersize': os.getenv('PAPER_SIZE') or 'letterpaper',
 
     # The font size ('10pt', '11pt' or '12pt').
     #
