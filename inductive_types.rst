@@ -15,7 +15,7 @@ Intuitively, an inductive type is built up from a specified list of constructors
     ...
     | constructorₙ : ... → foo
 
-The intuition is that each constructor specifies a way of building new objects of ``foo``, possibly from previously constructed values. The type ``foo`` consists of nothing more than the objects that are constructed in this way. The first character ``|`` in an inductive declaration is optional. We can also separate constructors using a comma instead of ``|``.
+The intuition is that each constructor specifies a way of building new objects of ``foo``, possibly from previously constructed values. The type ``foo`` consists of nothing more than the objects that are constructed in this way. When a constructor has the type ``foo``, the ``: foo`` giving the type of the constructor can be omitted (which is useful in enumerated types).
 
 We will see below that the arguments to the constructors can include objects of type ``foo``, subject to a certain "positivity" constraint, which guarantees that elements of ``foo`` are built from the bottom up. Roughly speaking, each ``...`` can be any Pi type constructed from ``foo`` and previously defined types, in which ``foo`` appears, if at all, only as the "target" of the Pi type. For more details, see [Dybj94]_.
 
