@@ -749,7 +749,7 @@ The constructors, ``even_zero``, ``even_succ``, and ``odd_succ`` provide positiv
     | _ (even_succ n h) := h
     -- END
 
-For another example, suppose we use a nested inductive type to define a set of terms inductively, so that a term is either a constant (with a name given by a string), or the result of applying a constant to a list of constants.
+For another example, suppose we use a nested inductive type to define a set of terms inductively, so that a term is either a constant (with a name given by a string), or the result of applying a constant to a list of terms.
 
 .. code-block:: lean
 
